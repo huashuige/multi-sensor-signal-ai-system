@@ -1,0 +1,53 @@
+{
+  "model_path": "D:\\multi\\multi\\myproject\\media\\models\\multi_channel_lstm_20250724_234543.pth",
+  "channels": [
+    "c1f3d7ea-90c6-4d78-b857-6e6dce75da48_CH0",
+    "c1f3d7ea-90c6-4d78-b857-6e6dce75da48_CH2",
+    "c1f3d7ea-90c6-4d78-b857-6e6dce75da48_CH1"
+  ],
+  "data_info": {
+    "window_size": 200,
+    "horizon": 10,
+    "input_size": 3,
+    "data_shape": [
+      3,
+      6660
+    ]
+  },
+  "model_config": {
+    "window_size": 200,
+    "horizon": 10,
+    "batch_size": 32,
+    "epochs": 100,
+    "lr": 0.001,
+    "hidden_size": 64,
+    "num_layers": 1,
+    "dropout": 0.2,
+    "patience": 10
+  },
+  "training_history": null,
+  "channel_stats": {
+    "0": {
+      "min": -10.067419052124023,
+      "max": -10.067419052124023,
+      "mean": -10.067419052124023,
+      "std": 0.0,
+      "original_range": 0.0
+    },
+    "1": {
+      "min": -10.067419052124023,
+      "max": -10.067419052124023,
+      "mean": -10.067419052124023,
+      "std": 0.0,
+      "original_range": 0.0
+    },
+    "2": {
+      "min": -10.067419052124023,
+      "max": -10.067419052124023,
+      "mean": -10.067419052124023,
+      "std": 0.0,
+      "original_range": 0.0
+    }
+  },
+  "timestamp": "20250724_234543"
+}

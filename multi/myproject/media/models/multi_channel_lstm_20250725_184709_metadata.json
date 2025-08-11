@@ -1,0 +1,70 @@
+{
+  "model_path": "D:\\multi\\multi\\myproject\\media\\models\\multi_channel_lstm_20250725_184709.pth",
+  "channels": [
+    "sim_20250725_002114_CH0",
+    "sim_20250725_002114_CH1"
+  ],
+  "data_info": {
+    "window_size": 100,
+    "horizon": 10,
+    "input_size": 2,
+    "data_shape": [
+      2,
+      20000
+    ]
+  },
+  "model_config": {
+    "window_size": 100,
+    "horizon": 10,
+    "batch_size": 32,
+    "epochs": 100,
+    "lr": 0.001,
+    "hidden_size": 64,
+    "num_layers": 1,
+    "dropout": 0.2,
+    "patience": 10
+  },
+  "training_history": {
+    "train_loss": [
+      0.021676816197764768,
+      0.005575093381969822,
+      0.005238749345987736,
+      0.005039523774864784,
+      0.004878542795718579,
+      0.004778479832975373,
+      0.004765194979039183
+    ],
+    "val_loss": [
+      0.007145494089196833,
+      0.006490101992583616,
+      0.00601351032023655,
+      0.005835831518275069,
+      0.005811566691300733,
+      0.005627842572024785,
+      0.005448312000148592
+    ],
+    "best_val_loss": 0.005448312000148592,
+    "epochs_trained": 7
+  },
+  "channel_stats": {
+    "0": {
+      "min": -2.268121423443244,
+      "max": 2.3492729569968094,
+      "mean": 0.0008102099201163042,
+      "std": 1.4182653607883744,
+      "original_range": 4.617394380440054,
+      "normalization_method": "min_max",
+      "is_valid": true
+    },
+    "1": {
+      "min": -0.1990427851930369,
+      "max": 3.2156059311711145,
+      "mean": 0.9002914715940861,
+      "std": 1.3758990402052889,
+      "original_range": 3.4146487163641512,
+      "normalization_method": "min_max",
+      "is_valid": true
+    }
+  },
+  "timestamp": "20250725_184709"
+}

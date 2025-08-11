@@ -1,0 +1,266 @@
+{% extends 'modules/module_base.html' %}
+
+{% block module_content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
+    
+    <!-- 主要内容区域 -->
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- 左侧：相机显示区域 -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800">相机实时画面</h2>
+                    <div class="flex items-center space-x-2">
+                        <span id="cameraStatus" class="px-3 py-1 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800">
+                            未连接
+                        </span>
+                        <!-- 相机选择下拉框 -->
+                        <select id="cameraSelect" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                            <option value="">检测中...</option>
+                        </select>
+                        <button id="refreshCameras" class="inline-flex items-center space-x-1 bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-2 rounded-lg transition-colors duration-200" title="刷新相机列表">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        </button>
+                        <button id="cameraToggle" class="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
+                            <i data-lucide="camera" class="w-4 h-4"></i>
+                            <span>启用相机</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 相机显示区域 -->
+                <div class="relative bg-gray-900 rounded-lg overflow-hidden" style="aspect-ratio: 16/9;">
+                    <div id="cameraDisplay" class="w-full h-full flex items-center justify-center">
+                        <div class="text-center text-gray-400">
+                            <i data-lucide="camera-off" class="w-16 h-16 mx-auto mb-4"></i>
+                            <p>相机未启用</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 处理结果显示 -->
+                    <div id="processingResult" class="absolute top-4 right-4 bg-black bg-opacity-75 text-white p-3 rounded-lg hidden">
+                        <div class="text-sm">
+                            <div>角度: <span id="angleValue">--</span>°</div>
+                            <div>读数: <span id="readingValue">--</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 状态信息 - 移动到相机画面下方 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mt-6 flex flex-col justify-between" style="min-height: 200px;">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">状态信息</h3>
+                    <div class="grid grid-cols-3 gap-4 text-sm">
+                        <div class="text-center p-3 bg-gray-50 rounded-lg">
+                            <div class="text-gray-600 mb-1">采集状态</div>
+                            <div id="collectionStatus" class="text-gray-800 font-medium">未开始</div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-50 rounded-lg">
+                            <div class="text-gray-600 mb-1">已采集</div>
+                            <div id="collectedCount" class="text-gray-800 font-medium">0</div>
+                        </div>
+                        <div class="text-center p-3 bg-gray-50 rounded-lg">
+                            <div class="text-gray-600 mb-1">处理时间</div>
+                            <div id="processingTime" class="text-gray-800 font-medium">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：控制面板 -->
+        <div class="flex flex-col justify-between h-full">
+            <div class="space-y-6">
+                <!-- 采样参数设置 -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">采样参数</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">采样点数</label>
+                            <input type="number" id="samplingPoints" value="100" min="1" max="1000" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">采样间隔 (秒)</label>
+                            <input type="number" id="samplingInterval" value="1" min="0.1" max="10" step="0.1"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">相机帧数 (FPS)</label>
+                            <select id="cameraFrameRate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="5">5 FPS (低帧数，省电)</option>
+                                <option value="10" selected>10 FPS (推荐)</option>
+                                <option value="15">15 FPS (流畅)</option>
+                                <option value="20">20 FPS (高帧数)</option>
+                                <option value="30">30 FPS (最高帧数)</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">帧数越高，画面越流畅，但会消耗更多资源</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mt-1">实时显示模式：相机画面仅用于实时显示，不保存图像文件</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 输出控制 - 减少高度 -->
+                <div class="bg-white rounded-xl shadow-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">输出控制</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox" id="saveAnnotatedImages" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                            <span class="text-sm text-gray-700">保存指针标注图像</span>
+                        </label>
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox" id="saveData" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked>
+                            <span class="text-sm text-gray-700">保存数据到CSV</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作控制 - 增加顶部间距避免重叠 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mt-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">操作控制</h3>
+                <div class="space-y-3">
+                    <button id="advancedSettings" class="w-full inline-flex items-center justify-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
+                        <span>高级设置</span>
+                    </button>
+                    <button id="startCollection" class="w-full inline-flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200">
+                        <i data-lucide="play" class="w-4 h-4"></i>
+                        <span>开始采集</span>
+                    </button>
+                    <button id="stopCollection" class="w-full inline-flex items-center justify-center space-x-2 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 hidden">
+                        <i data-lucide="square" class="w-4 h-4"></i>
+                        <span>停止采集</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 高级设置模态框 -->
+    <div id="advancedSettingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">高级设置</h2>
+                        <button id="closeAdvancedSettings" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- 显示控制选项 -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">显示控制</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <label class="flex items-center space-x-3 cursor-pointer p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" id="showBinarization" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">二值化图像</span>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" id="showAllLines" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                                <span class="text-sm text-gray-700">拟合所有直线</span>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <input type="checkbox" id="showPointerResult" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked>
+                                <span class="text-sm text-gray-700">指针标注结果</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 参数配置区域 -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        
+                        <!-- 图像预处理参数 -->
+                        <div>
+                            <h4 class="text-md font-semibold text-gray-800 mb-3">图像预处理</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">高斯核大小</label>
+                                    <input type="number" id="gaussianSize" value="5" min="1" max="15" step="2"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">二值化偏移量</label>
+                                    <input type="number" id="binarizationOffset" value="0" min="-50" max="50"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 直线检测参数 -->
+                        <div>
+                            <h4 class="text-md font-semibold text-gray-800 mb-3">直线检测</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">霍夫变换阈值</label>
+                                    <input type="number" id="houghThreshold" value="100" min="10" max="300"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">最小直线长度</label>
+                                    <input type="number" id="minLineLength" value="30" min="10" max="200"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">最大直线间断</label>
+                                    <input type="number" id="maxLineGap" value="3" min="1" max="20"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 指针读数参数 -->
+                        <div>
+                            <h4 class="text-md font-semibold text-gray-800 mb-3">指针读数</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">最大量程</label>
+                                    <input type="number" id="maxRange" value="15" min="1" max="100" step="0.1"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">角度范围</label>
+                                    <input type="number" id="angleRange" value="120" min="30" max="360"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">初始角度</label>
+                                    <input type="number" id="startAngle" value="32" min="0" max="360"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 操作按钮 -->
+                    <div class="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
+                        <button id="updateImage" class="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            <span>更新图像</span>
+                        </button>
+                        <button id="saveSettings" class="inline-flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            <span>保存设置</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 返回按钮 - 移到页面底部 -->
+    <div class="mt-6 text-center">
+        <a href="{% url 'all_acquire' %}" class="inline-flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            <span>返回信号采集模块</span>
+        </a>
+    </div>
+</div>
+<!-- 引入指针识别模块的JavaScript文件 -->
+<script src="/static/js/pointer.js"></script>
+{% endblock %} 

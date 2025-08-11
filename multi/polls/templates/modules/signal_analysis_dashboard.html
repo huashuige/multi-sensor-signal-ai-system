@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>信号分析平台</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/tailwind.min.css' %}">
+    <script src="{% static 'js/lucide.min.js' %}"></script>
+    <script src="{% static 'js/echarts.min.js' %}"></script>
+    <style>
+        /* 自定义动画 */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .module-card {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .module-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .module-card.active {
+            ring: 2px;
+            ring-color: rgb(59 130 246);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.2);
+        }
+
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <!-- Header -->
+    <div class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-600 p-2 rounded-lg">
+                        <i data-lucide="file-text" class="h-6 w-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">信号分析平台</h1>
+                        <p class="text-sm text-gray-500">时频域信号处理与分析系统</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- 返回主界面按钮 -->
+                    <a href="{% url 'all_acquire' %}" class="inline-flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 shadow-sm">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>返回主界面</span>
+                    </a>
+                    <span id="dataStatus" class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">等待数据</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- File Upload Section -->
+        <div class="bg-white rounded-xl p-6 shadow-lg mb-8">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="bg-blue-600 p-2 rounded-lg">
+                    <i data-lucide="upload" class="h-5 w-5 text-white"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800">数据文件上传</h2>
+                    <p class="text-sm text-gray-600">选择信号数据文件并设置采样参数</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- File Selection -->
+                <div class="space-y-2">
+                    <label for="dataFile" class="block text-sm font-medium text-gray-700">选择数据文件</label>
+                    <input type="file" id="dataFile" accept=".mat,.csv,.npy"
+                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-300 rounded-lg cursor-pointer">
+                    <p class="text-xs text-gray-500">支持格式: .mat, .csv, .npy</p>
+                    <div id="fileInfo" class="hidden mt-2 p-2 bg-green-50 rounded-lg">
+                        <p class="text-sm text-green-700" id="fileInfoText"></p>
+                    </div>
+                </div>
+
+                <!-- Sampling Rate -->
+                <div class="space-y-2">
+                    <label for="samplingRate" class="block text-sm font-medium text-gray-700">采样率 (Hz)</label>
+                    <input type="number" id="samplingRate" value="16384" min="1" max="1000000"
+                           class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    <p class="text-xs text-gray-500">默认: 16384 Hz</p>
+                </div>
+            </div>
+
+            <!-- Load Button -->
+            <button id="loadDataBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors duration-200 flex items-center disabled:opacity-50">
+                <i data-lucide="play" class="h-4 w-4 mr-2"></i>
+                <span>加载数据</span>
+            </button>
+        </div>
+
+        <!-- Analysis Modules Grid -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">分析模块</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Time Domain Analysis -->
+                <div class="module-card bg-white rounded-xl p-6 shadow-lg cursor-pointer" data-module="time-domain">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="bg-blue-500 p-2 rounded-lg">
+                            <i data-lucide="activity" class="h-5 w-5 text-white"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800">时域信号分析</h3>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">时域波形显示与基础统计分析</p>
+                    <div class="space-y-2">
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            波形显示
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            统计参数
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            峰值检测
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            趋势分析
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Frequency Domain Analysis -->
+                <div class="module-card bg-white rounded-xl p-6 shadow-lg cursor-pointer" data-module="frequency-domain">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="bg-green-500 p-2 rounded-lg">
+                            <i data-lucide="bar-chart-3" class="h-5 w-5 text-white"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800">频域信号分析</h3>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">FFT变换与频谱分析</p>
+                    <div class="space-y-2">
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            FFT变换
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            功率谱
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            频率分析
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            谐波检测
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Average Module -->
+                <div class="module-card bg-white rounded-xl p-6 shadow-lg cursor-pointer" data-module="time-average">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="bg-purple-500 p-2 rounded-lg">
+                            <i data-lucide="zap" class="h-5 w-5 text-white"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800">时域平均模块</h3>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">信号平均处理与噪声抑制</p>
+                    <div class="space-y-2">
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            同步平均
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            噪声抑制
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            信号增强
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            周期分析
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Transforms -->
+                <div class="module-card bg-white rounded-xl p-6 shadow-lg cursor-pointer" data-module="advanced-transforms">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="bg-blue-500 p-2 rounded-lg">
+                            <i data-lucide="settings" class="h-5 w-5 text-white"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800">高级分析变换</h3>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">CEP、CPW、LCEP等高级变换</p>
+                    <div class="space-y-2">
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            CEP变换
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            CPW变换
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            LCEP变换
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <div class="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></div>
+                            倒谱分析
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Module Display -->
+        <div id="activeModuleContainer" class="hidden">
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 id="activeModuleTitle" class="text-xl font-semibold text-gray-800"></h3>
+                    <button id="closeModuleBtn" class="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                        关闭
+                    </button>
+                </div>
+                <div id="activeModuleContent"></div>
+            </div>
+        </div>
+
+        <!-- Data Overview -->
+        <div id="dataOverview" class="hidden mt-8">
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">数据概览</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="text-center p-4 bg-blue-50 rounded-lg">
+                        <div id="samplingRateDisplay" class="text-2xl font-bold text-blue-600">0</div>
+                        <div class="text-sm text-gray-600">采样率 (Hz)</div>
+                    </div>
+                    <div class="text-center p-4 bg-green-50 rounded-lg">
+                        <div id="dataTypeDisplay" class="text-2xl font-bold text-green-600">-</div>
+                        <div class="text-sm text-gray-600">数据类型</div>
+                    </div>
+                    <div class="text-center p-4 bg-purple-50 rounded-lg">
+                        <div id="dataPointsDisplay" class="text-2xl font-bold text-purple-600">0</div>
+                        <div class="text-sm text-gray-600">数据点数</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-sm mx-4">
+            <div class="flex items-center">
+                <div class="loading-spinner rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+                <span class="text-gray-700">正在处理数据...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔧 模块化加载脚本 -->
+    <script src="{% static 'js/signal-analysis-core.js' %}"></script>
+    <script src="{% static 'js/time-domain-module.js' %}"></script>
+    <script src="{% static 'js/frequency-domain-module.js' %}"></script>
+    <script src="{% static 'js/time-average-module.js' %}"></script>
+    <script src="{% static 'js/advanced-transforms-module.js' %}"></script>
+
+    <!-- 初始化图标 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 确保Lucide图标正确加载
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+                document.body.classList.add('lucide-loaded');
+                console.log('✅ Lucide图标已加载');
+            } else {
+                console.warn('⚠️ Lucide图标库未加载，使用备用图标');
+            }
+        });
+    </script>
+
+    <!-- 其他模块按需加载 -->
+</body>
+</html>

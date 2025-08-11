@@ -1,0 +1,124 @@
+{% extends 'modules/module_base.html' %}
+
+{% block module_content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6 flex flex-col items-center justify-center">
+    
+    <!-- 页面标题区域 -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl sm:text-5xl font-bold mb-4 text-blue-600">
+            信号采集模块
+        </h1>
+        <p class="text-lg text-gray-500 max-w-2xl mx-auto">
+            集成多通道传感、数据监控与智能指针识别功能
+        </p>
+    </div>
+
+    <div class="max-w-7xl w-full">
+        <!-- 三个模块卡片区域 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <!-- 多通道传感采集模块 -->
+            <a href="{% url 'signal_acquisition' %}" class="block group">
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer h-full">
+                    <div class="flex flex-col items-center text-center">
+                        <!-- 图标区域 -->
+                        <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg" style="background: linear-gradient(to right, #1d4ed8, #0891b2);">
+                            <i data-lucide="activity" class="w-10 h-10 text-white"></i>
+                        </div>
+                        
+                        <!-- 标题和描述 -->
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3">多通道传感采集</h3>
+                        <p class="text-gray-600 leading-relaxed min-h-[4rem]">
+                            高精度多通道同步采集与实时波形显示
+                        </p>
+                        
+                        <!-- 进入按钮 -->
+                        <div class="mt-6 w-full">
+                            <div class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 group-hover:from-blue-700 group-hover:to-cyan-700" style="background: linear-gradient(to right, #2563eb, #0891b2);">
+                                进入模块
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 信号数据监控模块 -->
+            <a href="{% url 'monitor' %}" class="block group">
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer h-full">
+                    <div class="flex flex-col items-center text-center">
+                        <!-- 图标区域 -->
+                        <div class="w-20 h-20 bg-gradient-to-r from-green-500 to-teal-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg" style="background: linear-gradient(to right, #059669, #0f766e);">
+                            <i data-lucide="bar-chart-3" class="w-10 h-10 text-white"></i>
+                        </div>
+                        
+                        <!-- 标题和描述 -->
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3">信号数据监控</h3>
+                        <p class="text-gray-600 leading-relaxed min-h-[4rem]">
+                            实时数据流监控、智能异常检测与趋势分析
+                        </p>
+                        
+                        <!-- 进入按钮 -->
+                        <div class="mt-6 w-full">
+                            <div class="bg-gradient-to-r from-green-600 to-teal-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 group-hover:from-green-700 group-hover:to-teal-700" style="background: linear-gradient(to right, #16a34a, #0f766e);">
+                                进入模块
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 指针信号收集模块 -->
+            <a href="{% url 'pointer' %}" class="block group">
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer h-full">
+                    <div class="flex flex-col items-center text-center">
+                        <!-- 图标区域 -->
+                        <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg" style="background: linear-gradient(to right, #7c3aed, #db2777);">
+                            <i data-lucide="gauge-circle" class="w-10 h-10 text-white"></i>
+                        </div>
+                        
+                        <!-- 标题和描述 -->
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3">指针信号收集</h3>
+                        <p class="text-gray-600 leading-relaxed min-h-[4rem]">
+                            基于图像处理的仪表盘自动读数与数据采集
+                        </p>
+                        
+                        <!-- 进入按钮 -->
+                        <div class="mt-6 w-full">
+                            <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 group-hover:from-purple-700 group-hover:to-pink-700" style="background: linear-gradient(to right, #9333ea, #db2777);">
+                                进入模块
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 返回主页按钮 -->
+        <div class="text-center mt-16">
+            <a href="{% url 'home' %}" class="inline-flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-8 rounded-xl transition-colors duration-200 shadow-lg">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                <span>返回主页</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Lucide Icons
+    lucide.createIcons();
+
+    // 添加页面加载动画
+    const cards = document.querySelectorAll('.grid > a');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 200 + index * 100);
+    });
+});
+</script>
+{% endblock %} 

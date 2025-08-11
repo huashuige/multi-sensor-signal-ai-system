@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预测评估 - LSTM模型</title>
+    {% load static %}
+<script src="{% static 'js/echarts.min.js' %}"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+
+        .prediction-container {
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+
+        /* 头部区域 */
+        .prediction-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            border: 1px solid #34495e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title-section h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #ecf0f1;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .title-section p {
+            color: #bdc3c7;
+            font-size: 14px;
+        }
+
+        .back-button {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: linear-gradient(135deg, #2980b9, #1f5f8b);
+            transform: translateY(-2px);
+        }
+
+        /* 控制面板 */
+        .control-panel {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            border: 1px solid #34495e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ecf0f1;
+            margin-bottom: 15px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #e67e22, #f39c12);
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #138496, #117a8b);
+            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+        }
+
+        /* 评估指标面板 */
+        .metrics-panel {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            border: 1px solid #34495e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .metrics-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ecf0f1;
+            margin-bottom: 15px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            border: 1px solid #34495e;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: #bdc3c7;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #ecf0f1;
+        }
+
+        .metric-good {
+            color: #2ecc71;
+        }
+
+        .metric-medium {
+            color: #f39c12;
+        }
+
+        .metric-poor {
+            color: #e74c3c;
+        }
+
+        /* 图表区域 */
+        .charts-section {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            border: 1px solid #34495e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .charts-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ecf0f1;
+            margin-bottom: 15px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .chart-container {
+            height: 400px;
+            background: #2c3e50;
+            border-radius: 6px;
+            border: 1px solid #34495e;
+            margin-bottom: 20px;
+        }
+
+        /* 加载动画 */
+        .loading-spinner {
+            border: 4px solid #34495e;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 日志区域 */
+        .logs-section {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            border: 1px solid #34495e;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .logs-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ecf0f1;
+            margin-bottom: 15px;
+        }
+
+        .logs-container {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #2c3e50;
+            border-radius: 6px;
+            padding: 15px;
+            border: 1px solid #34495e;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: #95a5a6;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+
+        .log-message {
+            color: #ecf0f1;
+            font-size: 14px;
+        }
+
+        .log-info {
+            color: #3498db;
+        }
+
+        .log-success {
+            color: #2ecc71;
+        }
+
+        .log-warning {
+            color: #f39c12;
+        }
+
+        .log-error {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="prediction-container">
+        <!-- 头部区域 -->
+        <div class="prediction-header">
+            <div class="header-content">
+                <div class="title-section">
+                    <h1>预测评估</h1>
+                    <p>训练集: <span id="trainingSetName">加载中...</span></p>
+                </div>
+                <button class="back-button" onclick="goBackToTraining()">
+                    ← 返回训练
+                </button>
+            </div>
+        </div>
+
+        <!-- 控制面板 -->
+        <div class="control-panel">
+            <div class="control-title">预测控制</div>
+            <div class="control-buttons">
+                <button class="control-btn btn-success" id="startPredictionBtn">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 3a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H4.414l2.293 2.293a.5.5 0 1 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 0 1 .708.708L4.414 6H7.5A.5.5 0 0 1 8 5.5v-2a.5.5 0 0 1-.5-.5z"/>
+                    </svg>
+                    开始预测
+                </button>
+                <button class="control-btn btn-warning" id="exportResultsBtn" disabled>
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                    </svg>
+                    导出结果
+                </button>
+            </div>
+        </div>
+
+        <!-- 评估指标面板 -->
+        <div class="metrics-panel">
+            <div class="metrics-title">评估指标</div>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">R² 决定系数</div>
+                    <div class="metric-value" id="r2Value">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">MSE 均方误差</div>
+                    <div class="metric-value" id="mseValue">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">MAE 平均绝对误差</div>
+                    <div class="metric-value" id="maeValue">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">RMSE 均方根误差</div>
+                    <div class="metric-value" id="rmseValue">-</div>
+                </div>
+            </div>
+            <div style="margin-top: 15px; text-align: center;">
+                <button class="control-btn btn-info" id="viewChannelDetailsBtn" style="display: none;">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                    </svg>
+                    查看各通道详情
+                </button>
+            </div>
+        </div>
+
+        <!-- 图表区域 -->
+        <div class="charts-section">
+            <div class="charts-title">预测结果对比</div>
+            <div id="chartsContainer">
+                <div class="loading-spinner"></div>
+                <p style="text-align: center; color: #bdc3c7; margin-top: 10px;">
+                    点击"开始预测"按钮开始评估
+                </p>
+            </div>
+        </div>
+
+        <!-- 日志区域 -->
+        <div class="logs-section">
+            <div class="logs-title">预测日志</div>
+            <div class="logs-container" id="logsContainer">
+                <!-- 动态日志条目将在这里显示 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/prediction_evaluation.js"></script>
+</body>
+</html> 

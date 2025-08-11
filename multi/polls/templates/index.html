@@ -1,0 +1,355 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section id="overview" class="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+    <!-- Animated Background -->
+    <canvas id="hero-canvas" class="absolute inset-0 w-full h-full" style="background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);"></canvas>
+
+    <!-- Content -->
+    <div class="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="max-w-4xl mx-auto">
+            <!-- Main Title -->
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-blue-600">
+                多信息模式系统
+            </h1>
+
+            <!-- Subtitle -->
+            <h2 class="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-700 mb-4">
+                洞察设备健康，赋能智能运维
+            </h2>
+
+            <!-- Description -->
+            <p class="text-lg sm:text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+                融合多源数据，AI智能分析，实现设备状态的精准评估与预测。
+                通过先进的深度学习算法和多模态数据处理技术，为您提供全方位的设备健康监测解决方案。
+            </p>
+
+            <!-- CTA Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="#process" class="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg">
+                    立即探索
+                    <i data-lucide="arrow-right" class="ml-2 h-5 w-5 inline"></i>
+                </a>
+
+                <button class="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-3 text-lg font-semibold transition-all duration-300 rounded-lg">
+                    <i data-lucide="play" class="mr-2 h-5 w-5 inline"></i>
+                    观看演示
+                </button>
+            </div>
+
+            <!-- Key Features -->
+            <div class="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-8">
+                <a href="{% url 'signal_analysis' %}" class="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group">
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="activity" class="h-6 w-6 text-white"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">信号时频分析</h3>
+                    <p class="text-gray-600">多维信号时频域特征提取与分析</p>
+                </a>
+
+                <a href="{% url 'power_signal' %}" class="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group">
+                    <div class="w-12 h-12 bg-gradient-to-r from-pink-500 to-orange-500 rounded-lg mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="zap" class="h-6 w-6 text-white"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">电源信号识别</h3>
+                    <p class="text-gray-600">关键信号识别及状态智能判断</p>
+                </a>
+
+                <a href="{% url 'pointer_detection' %}" class="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group">
+                    <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="camera" class="h-6 w-6 text-white"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">指针数据采集</h3>
+                    <p class="text-gray-600">图像处理技术的智能数据采集</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Core Technologies Section -->
+<section id="technologies" class="py-20 bg-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl sm:text-4xl font-bold mb-4 text-blue-600">
+                核心技术架构
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                基于先进的人工智能算法和多模态数据处理技术，构建智能化设备健康监测体系
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Technology Cards -->
+            <div class="tech-card opacity-0 translate-y-8 transition-all duration-700 hover:shadow-xl hover:-translate-y-2 border-0 bg-gradient-to-br from-white to-gray-50 rounded-lg p-8 text-center shadow-lg">
+                <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
+                    <i data-lucide="activity" class="h-8 w-8 text-white"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">局部倒频谱</h3>
+                <p class="text-gray-600 leading-relaxed">高精度故障特征提取与分析技术</p>
+            </div>
+
+            <div class="tech-card opacity-0 translate-y-8 transition-all duration-700 hover:shadow-xl hover:-translate-y-2 border-0 bg-gradient-to-br from-white to-gray-50 rounded-lg p-8 text-center shadow-lg">
+                <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-teal-500 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
+                    <i data-lucide="zap" class="h-8 w-8 text-white"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">时域平均</h3>
+                <p class="text-gray-600 leading-relaxed">信号降噪与特征增强处理技术</p>
+            </div>
+
+            <div class="tech-card opacity-0 translate-y-8 transition-all duration-700 hover:shadow-xl hover:-translate-y-2 border-0 bg-gradient-to-br from-white to-gray-50 rounded-lg p-8 text-center shadow-lg">
+                <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
+                    <i data-lucide="camera" class="h-8 w-8 text-white"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">图像识别</h3>
+                <p class="text-gray-600 leading-relaxed">基于深度学习的视觉识别技术</p>
+            </div>
+
+            <div class="tech-card opacity-0 translate-y-8 transition-all duration-700 hover:shadow-xl hover:-translate-y-2 border-0 bg-gradient-to-br from-white to-gray-50 rounded-lg p-8 text-center shadow-lg">
+                <div class="w-16 h-16 bg-gradient-to-r from-pink-500 to-red-500 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
+                    <i data-lucide="brain" class="h-8 w-8 text-white"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">LSTM网络</h3>
+                <p class="text-gray-600 leading-relaxed">长短期记忆网络序列数据建模</p>
+            </div>
+
+            <div class="tech-card opacity-0 translate-y-8 transition-all duration-700 hover:shadow-xl hover:-translate-y-2 border-0 bg-gradient-to-br from-white to-gray-50 rounded-lg p-8 text-center shadow-lg">
+                <div class="w-16 h-16 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
+                    <i data-lucide="database" class="h-8 w-8 text-white"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">AAKR算法</h3>
+                <p class="text-gray-600 leading-relaxed">自适应核回归异常检测技术</p>
+            </div>
+
+            <div class="tech-card opacity-0 translate-y-8 transition-all duration-700 hover:shadow-xl hover:-translate-y-2 border-0 bg-gradient-to-br from-white to-gray-50 rounded-lg p-8 text-center shadow-lg">
+                <div class="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
+                    <i data-lucide="cpu" class="h-8 w-8 text-white"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">深度神经网络</h3>
+                <p class="text-gray-600 leading-relaxed">多层感知机与卷积神经网络</p>
+            </div>
+        </div>
+
+        <!-- Core Function Modules -->
+        <div id="process" class="mt-20">
+            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-3xl p-8 lg:p-12">
+                <h3 class="text-2xl font-bold text-center mb-12 text-gray-800">核心功能模块</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <a href="{% url 'signal_acquisition' %}" class="block">
+                        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer h-full">
+                            <div class="flex flex-col items-center text-center">
+                                <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mb-4">
+                                    <i data-lucide="server" class="h-8 w-8 text-white"></i>
+                                </div>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">信号采集模块</h4>
+                                <p class="text-gray-600">多源信号实时采集与预处理</p>
+                                <div class="mt-4 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                    <span class="text-lg font-bold text-gray-800">1</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="{% url 'time_frequency_analysis' %}" class="block">
+                        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer h-full">
+                            <div class="flex flex-col items-center text-center">
+                                <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center mb-4">
+                                    <i data-lucide="bar-chart-3" class="h-8 w-8 text-white"></i>
+                                </div>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">时域频域分析模块</h4>
+                                <p class="text-gray-600">信号特征提取与时频域分析</p>
+                                <div class="mt-4 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                    <span class="text-lg font-bold text-gray-800">2</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="{% url 'deep_learning' %}" class="block">
+                        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer h-full">
+                            <div class="flex flex-col items-center text-center">
+                                <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-4">
+                                    <i data-lucide="brain" class="h-8 w-8 text-white"></i>
+                                </div>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">深度学习模块</h4>
+                                <p class="text-gray-600">基于AI的智能分析与预测</p>
+                                <div class="mt-4 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                    <span class="text-lg font-bold text-gray-800">3</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="{% url 'device_management' %}" class="block">
+                        <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer h-full">
+                            <div class="flex flex-col items-center text-center">
+                                <div class="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mb-4">
+                                    <i data-lucide="layers" class="h-8 w-8 text-white"></i>
+                                </div>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">设备管理模块</h4>
+                                <p class="text-gray-600">设备状态监控与健康管理</p>
+                                <div class="mt-4 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                    <span class="text-lg font-bold text-gray-800">4</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Connection lines for desktop -->
+                <div class="hidden lg:block relative h-1 max-w-3xl mx-auto mt-8">
+                    <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 via-green-400 to-purple-400"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Application Scenarios Section -->
+<section id="applications" class="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl sm:text-4xl font-bold mb-4 text-blue-600">
+                应用场景
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                覆盖多个工业领域，提供全方位的设备监测和故障诊断解决方案
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Application Cards -->
+            <div class="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm overflow-hidden cursor-pointer rounded-lg">
+                <div class="p-8">
+                    <div class="flex items-start space-x-6">
+                        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                            <i data-lucide="activity" class="h-8 w-8 text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-3">信号时频分析</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">采用先进的时频分析技术，对多维信号进行深度特征提取，实现信号的时域和频域联合分析</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>短时傅里叶变换</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>小波变换分析</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>希尔伯特变换</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>频谱特征提取</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm overflow-hidden cursor-pointer rounded-lg">
+                <div class="p-8">
+                    <div class="flex items-start space-x-6">
+                        <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                            <i data-lucide="zap" class="h-8 w-8 text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-3">电源关键信号识别及状态识别</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">基于电流、电压等关键电气参数的智能识别与分析，准确判断电源系统运行状态</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>电流波形识别</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>电压状态分析</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>功率特征提取</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>异常状态检测</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm overflow-hidden cursor-pointer rounded-lg">
+                <div class="p-8">
+                    <div class="flex items-start space-x-6">
+                        <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                            <i data-lucide="camera" class="h-8 w-8 text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-3">基于图像处理的发射机指针数据采集及处理技术</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">利用计算机视觉和图像处理技术，实现发射机仪表指针的自动识别和数据采集</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>图像预处理</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>指针识别定位</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>角度计算</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>数值自动读取</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/80 backdrop-blur-sm overflow-hidden cursor-pointer rounded-lg">
+                <div class="p-8">
+                    <div class="flex items-start space-x-6">
+                        <div class="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                            <i data-lucide="shield" class="h-8 w-8 text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-3">综合系统集成</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">将三大核心技术模块进行有机整合，构建完整的多信息模式分析系统</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>多源数据融合</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>智能决策支持</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>系统状态监控</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-sm text-gray-700">
+                                    <div class="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
+                                    <span>预测性维护</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

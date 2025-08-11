@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最小化图标测试</title>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        [data-lucide="settings"]::before {
+            content: "⚙";
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            color: inherit;
+            font-weight: bold;
+            text-shadow: 0 0 2px rgba(0,0,0,0.3);
+        }
+        
+        .lucide-loaded [data-lucide]::before {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto">
+        <h1 class="text-xl font-bold mb-4">最小化图标测试</h1>
+        
+        <!-- 测试1: 深色背景 -->
+        <div class="bg-orange-600 p-4 rounded-lg mb-4">
+            <div class="flex items-center">
+                <i data-lucide="settings" class="h-6 w-6 text-white"></i>
+                <span class="text-white ml-2">Settings图标 (白色)</span>
+            </div>
+        </div>
+        
+        <!-- 测试2: 浅色背景 -->
+        <div class="bg-white p-4 rounded-lg border mb-4">
+            <div class="flex items-center">
+                <i data-lucide="settings" class="h-6 w-6 text-gray-800"></i>
+                <span class="text-gray-800 ml-2">Settings图标 (深灰)</span>
+            </div>
+        </div>
+        
+        <!-- 测试3: 橙色背景 -->
+        <div class="bg-orange-500 p-4 rounded-lg mb-4">
+            <div class="flex items-center">
+                <i data-lucide="settings" class="h-6 w-6 text-white"></i>
+                <span class="text-white ml-2">Settings图标 (白色)</span>
+            </div>
+        </div>
+        
+        <!-- 调试信息 -->
+        <div class="bg-white p-4 rounded-lg border">
+            <h3 class="font-bold mb-2">调试信息:</h3>
+            <div id="debugInfo" class="text-sm"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const debugInfo = document.getElementById('debugInfo');
+            
+            // 检查Lucide
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+                document.body.classList.add('lucide-loaded');
+                debugInfo.innerHTML = '✅ Lucide已加载';
+            } else {
+                debugInfo.innerHTML = '⚠️ Lucide未加载，使用fallback';
+            }
+            
+            // 检查图标
+            const icons = document.querySelectorAll('[data-lucide="settings"]');
+            debugInfo.innerHTML += `<br>找到 ${icons.length} 个settings图标`;
+            
+            icons.forEach((icon, index) => {
+                const rect = icon.getBoundingClientRect();
+                const style = window.getComputedStyle(icon);
+                debugInfo.innerHTML += `<br>图标${index+1}: ${rect.width}x${rect.height}, 颜色: ${style.color}`;
+            });
+        });
+    </script>
+</body>
+</html> 

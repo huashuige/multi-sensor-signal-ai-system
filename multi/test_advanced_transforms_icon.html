@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级变换图标测试</title>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Loading spinner styles */
+        .loading-spinner {
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        /* Button hover effects */
+        .btn-hover-effect {
+          transition: all 0.3s ease;
+        }
+
+        .btn-hover-effect:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Icon fallback styles */
+        [data-lucide] {
+          display: inline-block;
+          vertical-align: middle;
+        }
+
+        /* Ensure icons are visible even if Lucide fails to load */
+        [data-lucide="upload"]::before {
+          content: "📤";
+          display: inline-block;
+          width: 1em;
+          height: 1em;
+        }
+
+        [data-lucide="play"]::before {
+          content: "▶";
+          display: inline-block;
+          width: 1em;
+          height: 1em;
+        }
+
+        [data-lucide="cpu"]::before {
+          content: "⚙";
+          display: inline-block;
+          width: 1em;
+          height: 1em;
+        }
+
+        [data-lucide="settings"]::before {
+          content: "⚙";
+          display: inline-block;
+          width: 1em;
+          height: 1em;
+        }
+
+        [data-lucide="zap"]::before {
+          content: "⚡";
+          display: inline-block;
+          width: 1em;
+          height: 1em;
+        }
+
+        [data-lucide="info"]::before {
+          content: "ℹ";
+          display: inline-block;
+          width: 1em;
+          height: 1em;
+        }
+
+        [data-lucide="file-text"]::before {
+          content: "📄";
+          display: inline-block;
+          width: 1em;
+          height: 1em;
+        }
+
+        [data-lucide="activity"]::before {
+          content: "📊";
+          display: inline-block;
+          width: 1em;
+          height: 1em;
+        }
+
+        [data-lucide="trending-up"]::before {
+          content: "📈";
+          display: inline-block;
+          width: 1em;
+          height: 1em;
+        }
+
+        /* Hide fallback icons when Lucide icons are loaded */
+        .lucide-loaded [data-lucide]::before {
+          display: none;
+        }
+
+        /* 调试样式 */
+        .debug-icon {
+            border: 1px solid red;
+            background: rgba(255, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">高级变换图标测试</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 原始模块卡片样式 -->
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold mb-4">原始模块卡片样式</h3>
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="bg-orange-500 p-2 rounded-lg">
+                        <i data-lucide="settings" class="h-5 w-5 text-white debug-icon"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800">高级分析变换</h3>
+                </div>
+                <p class="text-sm text-gray-600">CEP、CPW、LCEP等高级变换</p>
+            </div>
+
+            <!-- 模块内容中的图标 -->
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold mb-4">模块内容中的图标</h3>
+                <div class="flex items-center">
+                    <i data-lucide="settings" class="h-5 w-5 mr-2 text-orange-600 debug-icon"></i>
+                    <h4 class="text-lg font-semibold">高级变换分析</h4>
+                </div>
+            </div>
+
+            <!-- 结果图表中的图标 -->
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold mb-4">结果图表中的图标</h3>
+                <div class="flex items-center justify-center h-32 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                    <div class="text-center text-gray-500">
+                        <i data-lucide="settings" class="h-12 w-12 mx-auto mb-2 opacity-50 debug-icon"></i>
+                        <div>点击"执行变换分析"查看结果</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 其他图标对比 -->
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold mb-4">其他图标对比</h3>
+                <div class="space-y-2">
+                    <div class="flex items-center">
+                        <i data-lucide="cpu" class="h-5 w-5 mr-2 text-blue-600"></i>
+                        <span>CPU图标</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i data-lucide="upload" class="h-5 w-5 mr-2 text-green-600"></i>
+                        <span>Upload图标</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i data-lucide="play" class="h-5 w-5 mr-2 text-purple-600"></i>
+                        <span>Play图标</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 调试信息 -->
+        <div class="mt-8 bg-white rounded-xl p-6 shadow-lg">
+            <h3 class="text-lg font-semibold mb-4">调试信息</h3>
+            <div id="debugInfo" class="text-sm font-mono bg-gray-100 p-4 rounded">
+                正在检查图标状态...
+            </div>
+        </div>
+
+        <!-- 测试按钮 -->
+        <div class="mt-8 bg-white rounded-xl p-6 shadow-lg">
+            <h3 class="text-lg font-semibold mb-4">测试按钮</h3>
+            <button id="testBtn" class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg transition-colors duration-200 flex items-center btn-hover-effect">
+                <i data-lucide="cpu" class="h-4 w-4 mr-2"></i>
+                执行变换分析
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const debugInfo = document.getElementById('debugInfo');
+            
+            // 检查Lucide是否加载
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+                document.body.classList.add('lucide-loaded');
+                console.log('✅ Lucide图标已加载');
+                debugInfo.innerHTML += '<br>✅ Lucide图标已加载';
+            } else {
+                console.warn('⚠️ Lucide图标库未加载，使用备用图标');
+                debugInfo.innerHTML += '<br>⚠️ Lucide图标库未加载，使用备用图标';
+            }
+
+            // 检查所有settings图标
+            const settingsIcons = document.querySelectorAll('[data-lucide="settings"]');
+            debugInfo.innerHTML += `<br>找到 ${settingsIcons.length} 个settings图标`;
+            
+            settingsIcons.forEach((icon, index) => {
+                const computedStyle = window.getComputedStyle(icon);
+                const display = computedStyle.display;
+                const visibility = computedStyle.visibility;
+                const opacity = computedStyle.opacity;
+                const color = computedStyle.color;
+                
+                debugInfo.innerHTML += `<br>图标 ${index + 1}: display=${display}, visibility=${visibility}, opacity=${opacity}, color=${color}`;
+            });
+
+            // 检查是否有CSS规则影响图标
+            const testIcon = document.querySelector('[data-lucide="settings"]');
+            if (testIcon) {
+                const rect = testIcon.getBoundingClientRect();
+                debugInfo.innerHTML += `<br>图标尺寸: width=${rect.width}, height=${rect.height}`;
+                
+                if (rect.width === 0 || rect.height === 0) {
+                    debugInfo.innerHTML += '<br>⚠️ 图标尺寸为0，可能被隐藏';
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

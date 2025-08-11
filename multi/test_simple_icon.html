@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单图标测试</title>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Icon fallback styles */
+        [data-lucide] {
+          display: inline-block;
+          vertical-align: middle;
+        }
+
+        [data-lucide="settings"]::before {
+          content: "⚙";
+          display: inline-block;
+          width: 1em;
+          height: 1em;
+          color: inherit;
+        }
+
+        /* Hide fallback icons when Lucide icons are loaded */
+        .lucide-loaded [data-lucide]::before {
+          display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">简单图标测试</h1>
+        
+        <div class="space-y-4">
+            <!-- 白色文本在橙色背景上 -->
+            <div class="bg-orange-500 p-4 rounded-lg">
+                <h3 class="text-white mb-2">白色文本在橙色背景上</h3>
+                <div class="flex items-center space-x-4">
+                    <i data-lucide="settings" class="h-6 w-6 text-white"></i>
+                    <span class="text-white">Settings图标</span>
+                </div>
+            </div>
+
+            <!-- 橙色文本在白色背景上 -->
+            <div class="bg-white p-4 rounded-lg border">
+                <h3 class="text-gray-800 mb-2">橙色文本在白色背景上</h3>
+                <div class="flex items-center space-x-4">
+                    <i data-lucide="settings" class="h-6 w-6 text-orange-600"></i>
+                    <span class="text-orange-600">Settings图标</span>
+                </div>
+            </div>
+
+            <!-- 其他图标对比 -->
+            <div class="bg-white p-4 rounded-lg border">
+                <h3 class="text-gray-800 mb-2">其他图标对比</h3>
+                <div class="flex items-center space-x-4">
+                    <i data-lucide="cpu" class="h-6 w-6 text-blue-600"></i>
+                    <span class="text-blue-600">CPU图标</span>
+                </div>
+            </div>
+
+            <!-- 调试信息 -->
+            <div class="bg-white p-4 rounded-lg border">
+                <h3 class="text-gray-800 mb-2">调试信息</h3>
+                <div id="debugInfo" class="text-sm font-mono bg-gray-100 p-2 rounded">
+                    正在检查...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const debugInfo = document.getElementById('debugInfo');
+            
+            // 检查Lucide是否加载
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+                document.body.classList.add('lucide-loaded');
+                console.log('✅ Lucide图标已加载');
+                debugInfo.innerHTML = '✅ Lucide图标已加载';
+            } else {
+                console.warn('⚠️ Lucide图标库未加载，使用备用图标');
+                debugInfo.innerHTML = '⚠️ Lucide图标库未加载，使用备用图标';
+            }
+
+            // 检查settings图标
+            const settingsIcon = document.querySelector('[data-lucide="settings"]');
+            if (settingsIcon) {
+                const rect = settingsIcon.getBoundingClientRect();
+                const computedStyle = window.getComputedStyle(settingsIcon);
+                
+                debugInfo.innerHTML += `<br>图标尺寸: ${rect.width}x${rect.height}`;
+                debugInfo.innerHTML += `<br>显示: ${computedStyle.display}`;
+                debugInfo.innerHTML += `<br>颜色: ${computedStyle.color}`;
+                debugInfo.innerHTML += `<br>可见性: ${computedStyle.visibility}`;
+                
+                if (rect.width === 0 || rect.height === 0) {
+                    debugInfo.innerHTML += '<br>⚠️ 图标尺寸为0';
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

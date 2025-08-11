@@ -1,0 +1,939 @@
+{% extends 'modules/module_base.html' %}
+
+{% block module_content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+    <!-- 顶部参数配置区域 - 恢复v20布局但加宽容器 -->
+    <div class="max-w-6xl mx-auto bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 mb-6">
+        <div class="grid grid-cols-12 gap-6">
+
+            <!-- 设备连接 -->
+            <div class="col-span-2">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-2">
+                        <div id="statusIndicator" class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <span id="statusText" class="text-sm font-medium text-gray-700">设备未连接</span>
+                    </div>
+                    <div id="acquisitionStatus" class="hidden">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="connectBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                        连接
+                    </button>
+                    <button id="disconnectBtn" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50" disabled>
+                        断开
+                    </button>
+                </div>
+            </div>
+
+            <!-- 采集模式 -->
+            <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">采集模式</label>
+                <select id="acquisitionMode" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                    <option value="0">连续采集</option>
+                    <option value="1">单次采集</option>
+                </select>
+            </div>
+
+            <!-- 采样率 - 支持手动输入 -->
+            <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">采样率 (Hz)</label>
+                <input type="number" id="sampleRate" value="10000" min="100" max="1000000" step="100" list="sampleRateOptions"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                       placeholder="输入或选择采样率">
+                <datalist id="sampleRateOptions">
+                    <option value="1000">1 kHz</option>
+                    <option value="10000">10 kHz</option>
+                    <option value="50000">50 kHz</option>
+                    <option value="100000">100 kHz</option>
+                    <option value="200000">200 kHz</option>
+                    <option value="500000">500 kHz</option>
+                </datalist>
+            </div>
+
+            <!-- 单次采集点数 -->
+            <div class="col-span-2" id="oneshotPointsDiv">
+                <label class="block text-sm font-medium text-gray-700 mb-2">采集点数</label>
+                <input type="number" id="oneshotPoints" value="1000" min="100" max="10000" step="100"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+            </div>
+
+            <!-- 通道配置按钮 -->
+            <div class="col-span-2 flex items-end">
+                <button id="openChannelConfig" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50" disabled>
+                    <div class="flex items-center justify-center space-x-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>通道配置</span>
+                    </div>
+                </button>
+            </div>
+
+            <!-- 显示单位 -->
+            <div class="col-span-2 flex items-end">
+                <div class="w-full">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">显示单位</label>
+                    <select id="displayUnit" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                        <option value="voltage">电压(V)</option>
+                        <option value="converted">转换值(A)</option>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 第二行：配置按钮和状态信息 -->
+        <div class="grid grid-cols-12 gap-6 mt-4">
+            <div class="col-span-3">
+                <button id="applyConfig" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50" disabled>
+                    应用配置
+                </button>
+            </div>
+            <div class="col-span-3">
+                <div class="text-sm text-gray-600 space-y-1">
+                    <div>缓冲区: <span id="bufferRemaining" class="font-mono text-blue-600">0</span></div>
+                    <div>速率: <span id="acquisitionRate" class="font-mono text-green-600">0 Hz</span></div>
+                </div>
+            </div>
+            <div class="col-span-6">
+                <div class="text-sm text-gray-600">
+                    当前显示: <span id="currentUnit" class="font-semibold text-blue-600">电压 (V)</span>
+                    <span id="enabledChannelsInfo" class="ml-4 text-gray-500">已启用: 0个通道</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 示波器波形显示区域 - 降低高度 -->
+    <div class="max-w-6xl mx-auto bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20 mb-6">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                <div class="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
+                数字示波器
+            </h3>
+            <div class="flex items-center space-x-2" id="channelLegend">
+                <!-- 动态生成通道图例 -->
+            </div>
+        </div>
+
+        <!-- 示波器显示屏 - 降低高度到450px -->
+        <div class="bg-black rounded-xl p-4 border-4 border-gray-800 shadow-inner">
+            <div id="realtimeChart" class="w-full rounded-lg" style="height: 450px;"></div>
+        </div>
+
+        <!-- 采集控制按钮 - 添加数据存储按钮 -->
+        <div class="flex justify-center space-x-6 mt-8">
+            <button id="startAcquisition" class="bg-green-600 hover:bg-green-700 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:transform-none flex items-center space-x-3 shadow-lg" disabled>
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
+                </svg>
+                <span>开始采集</span>
+            </button>
+            <button id="stopAcquisition" class="bg-red-600 hover:bg-red-700 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:transform-none flex items-center space-x-3 shadow-lg" disabled>
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd"></path>
+                </svg>
+                <span>停止采集</span>
+            </button>
+            <!-- 数据存储按钮 -->
+            <button id="saveData" class="bg-purple-600 hover:bg-purple-700 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:transform-none flex items-center space-x-3 shadow-lg">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+                <span>数据存储</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 返回按钮 -->
+    <div class="max-w-6xl mx-auto text-center">
+        <a href="{% url 'all_acquire' %}" class="inline-flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-8 rounded-xl transition-colors duration-200 shadow-lg">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+            </svg>
+            <span>返回信号采集模块</span>
+        </a>
+    </div>
+</div>
+
+<!-- 16通道配置弹窗 -->
+<div id="channelConfigModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
+        <!-- 弹窗头部 -->
+        <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
+            <div class="flex items-center justify-between">
+                <h2 class="text-2xl font-bold">16通道配置</h2>
+                <button id="closeChannelConfig" class="text-white hover:text-gray-200 transition-colors">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+            <p class="text-purple-100 mt-2">配置每个通道的量程和灵敏度</p>
+        </div>
+
+        <!-- 弹窗内容 -->
+        <div class="p-6 overflow-y-auto max-h-[60vh]">
+            <div class="grid grid-cols-4 gap-4" id="channelConfigGrid">
+                <!-- 动态生成16个通道配置 -->
+            </div>
+        </div>
+
+        <!-- 弹窗底部按钮 -->
+        <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-4">
+            <button id="cancelChannelConfig" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                取消
+            </button>
+            <button id="confirmChannelConfig" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                确认配置
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast通知 -->
+<div id="messageToast" class="fixed top-4 right-4 z-50 hidden">
+    <div class="bg-white rounded-xl shadow-2xl border border-gray-200 p-4 max-w-sm">
+        <div class="flex items-center">
+            <div id="toastIcon" class="mr-3"></div>
+            <div>
+                <div id="toastTitle" class="font-medium text-gray-900"></div>
+                <div id="toastMessage" class="text-sm text-gray-600"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% load static %}
+<script src="{% static 'js/echarts.min.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // WebSocket连接
+    let socket = null;
+    let isConnected = false;
+    let isAcquiring = false;
+    let dataPacketCount = 0;
+
+    // 图表实例
+    let realtimeChart = null;
+    let chartData = { time: [], ch0: [], ch1: [], ch2: [], ch3: [], ch4: [], ch5: [], ch6: [], ch7: [], ch8: [], ch9: [], ch10: [], ch11: [], ch12: [], ch13: [], ch14: [], ch15: [] };
+    let maxDataPoints = 1000;
+
+    // 通道配置
+    let channelConfigs = {};
+    let enabledChannels = [];
+
+    // 通道颜色配置
+    const channelColors = [
+        '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316',
+        '#ec4899', '#14b8a6', '#fbbf24', '#a855f7', '#06b6d4', '#84cc16', '#f97316', '#ec4899'
+    ];
+
+    // DOM元素
+    const elements = {
+        statusIndicator: document.getElementById('statusIndicator'),
+        statusText: document.getElementById('statusText'),
+        acquisitionStatus: document.getElementById('acquisitionStatus'),
+        connectBtn: document.getElementById('connectBtn'),
+        disconnectBtn: document.getElementById('disconnectBtn'),
+        openChannelConfig: document.getElementById('openChannelConfig'),
+        channelConfigModal: document.getElementById('channelConfigModal'),
+        closeChannelConfig: document.getElementById('closeChannelConfig'),
+        cancelChannelConfig: document.getElementById('cancelChannelConfig'),
+        confirmChannelConfig: document.getElementById('confirmChannelConfig'),
+        channelConfigGrid: document.getElementById('channelConfigGrid'),
+        channelLegend: document.getElementById('channelLegend'),
+        acquisitionMode: document.getElementById('acquisitionMode'),
+        sampleRate: document.getElementById('sampleRate'),
+        oneshotPoints: document.getElementById('oneshotPoints'),
+        oneshotPointsDiv: document.getElementById('oneshotPointsDiv'),
+        displayUnit: document.getElementById('displayUnit'),
+        currentUnit: document.getElementById('currentUnit'),
+        enabledChannelsInfo: document.getElementById('enabledChannelsInfo'),
+        applyConfig: document.getElementById('applyConfig'),
+        startAcquisition: document.getElementById('startAcquisition'),
+        stopAcquisition: document.getElementById('stopAcquisition'),
+        saveData: document.getElementById('saveData'),
+        bufferRemaining: document.getElementById('bufferRemaining'),
+        acquisitionRate: document.getElementById('acquisitionRate')
+    };
+
+    // 初始化
+    initializeUI();
+    initializeChart();
+    generateChannelConfigModal();
+
+    function initializeUI() {
+        bindEvents();
+        updateDisplayUnit();
+    }
+
+    function generateChannelConfigModal() {
+        const container = elements.channelConfigGrid;
+        container.innerHTML = '';
+
+        for (let i = 0; i < 16; i++) {
+            const channelDiv = document.createElement('div');
+            channelDiv.className = 'bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-blue-300 transition-colors';
+            channelDiv.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="modalChannel${i}Enable" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                            <label class="text-sm font-bold text-gray-800">CH${i}</label>
+                            <div class="w-3 h-3 rounded-full" style="background-color: ${channelColors[i]}"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">量程 (V)</label>
+                        <select id="modalChannel${i}Range" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                            <option value="1">±1V</option>
+                            <option value="2">±2V</option>
+                            <option value="5">±5V</option>
+                            <option value="10" selected>±10V</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">灵敏度 (A/V)</label>
+                        <div class="flex space-x-1">
+                            <input type="number" id="modalChannel${i}Sensitivity" value="1" min="0.1" max="10000" step="0.1"
+                                   class="flex-1 px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="输入数值">
+                            <select id="modalChannel${i}SensitivityPreset" class="px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-transparent">
+                                <option value="1">1</option>
+                                <option value="10">10</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(channelDiv);
+
+            // 绑定预设值选择事件
+            const presetSelect = document.getElementById(`modalChannel${i}SensitivityPreset`);
+            const sensitivityInput = document.getElementById(`modalChannel${i}Sensitivity`);
+            presetSelect.addEventListener('change', function() {
+                sensitivityInput.value = this.value;
+            });
+        }
+    }
+
+    function bindEvents() {
+        elements.connectBtn.addEventListener('click', connectDevice);
+        elements.disconnectBtn.addEventListener('click', disconnectDevice);
+        elements.openChannelConfig.addEventListener('click', openChannelConfigModal);
+        elements.closeChannelConfig.addEventListener('click', closeChannelConfigModal);
+        elements.cancelChannelConfig.addEventListener('click', closeChannelConfigModal);
+        elements.confirmChannelConfig.addEventListener('click', confirmChannelConfiguration);
+        elements.applyConfig.addEventListener('click', applyAcquisitionConfiguration);
+        elements.startAcquisition.addEventListener('click', startAcquisition);
+        elements.stopAcquisition.addEventListener('click', stopAcquisition);
+        elements.saveData.addEventListener('click', saveData);
+
+        // 采集模式变化
+        elements.acquisitionMode.addEventListener('change', function() {
+            const isOneshot = this.value === '1';
+            elements.oneshotPointsDiv.style.display = isOneshot ? 'block' : 'none';
+        });
+
+        // 显示单位变化
+        elements.displayUnit.addEventListener('change', updateDisplayUnit);
+
+        // 采样率输入验证
+        elements.sampleRate.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            if (value < 100) this.value = 100;
+            if (value > 1000000) this.value = 1000000;
+        });
+    }
+
+    function openChannelConfigModal() {
+        elements.channelConfigModal.classList.remove('hidden');
+        // 加载当前配置
+        loadCurrentChannelConfig();
+    }
+
+    function closeChannelConfigModal() {
+        elements.channelConfigModal.classList.add('hidden');
+    }
+
+    function loadCurrentChannelConfig() {
+        // 加载当前已保存的通道配置
+        for (let i = 0; i < 16; i++) {
+            const config = channelConfigs[i] || { enabled: false, range: 10, sensitivity: 1 };
+            
+            document.getElementById(`modalChannel${i}Enable`).checked = config.enabled;
+            document.getElementById(`modalChannel${i}Range`).value = config.range;
+            document.getElementById(`modalChannel${i}Sensitivity`).value = config.sensitivity;
+            
+            // 设置预设值
+            const presetSelect = document.getElementById(`modalChannel${i}SensitivityPreset`);
+            if (config.sensitivity === 1) presetSelect.value = '1';
+            else if (config.sensitivity === 10) presetSelect.value = '10';
+            else if (config.sensitivity === 100) presetSelect.value = '100';
+            else presetSelect.value = '1';
+        }
+    }
+
+    function confirmChannelConfiguration() {
+        // 收集所有通道配置
+        const channels = [];
+        enabledChannels = [];
+
+        for (let i = 0; i < 16; i++) {
+            const enabled = document.getElementById(`modalChannel${i}Enable`).checked;
+            const range = parseFloat(document.getElementById(`modalChannel${i}Range`).value);
+            const sensitivity = parseFloat(document.getElementById(`modalChannel${i}Sensitivity`).value);
+
+            channelConfigs[i] = {
+                enabled: enabled,
+                range: range,
+                sensitivity: sensitivity
+            };
+
+            if (enabled) {
+                enabledChannels.push(i);
+                channels.push({
+                    channel: i,
+                    enabled: enabled,
+                    range: range
+                });
+            }
+        }
+
+        console.log('⚙️ 通道配置:', channelConfigs);
+        console.log('✅ 启用的通道:', enabledChannels);
+
+        // 更新界面显示
+        updateChannelLegend();
+        updateEnabledChannelsInfo();
+
+        // 发送配置到后端
+        sendMessage({
+            type: 'configure_channels',
+            channels: channels
+        });
+
+        // 关闭弹窗
+        closeChannelConfigModal();
+    }
+
+    function updateChannelLegend() {
+        const container = elements.channelLegend;
+        container.innerHTML = '';
+
+        enabledChannels.forEach(ch => {
+            const legendDiv = document.createElement('div');
+            legendDiv.className = 'flex items-center space-x-2 px-3 py-1 rounded-full';
+            legendDiv.style.backgroundColor = `${channelColors[ch]}20`;
+            legendDiv.innerHTML = `
+                <div class="w-3 h-1 rounded" style="background-color: ${channelColors[ch]}"></div>
+                <span class="text-xs font-medium" style="color: ${channelColors[ch]}">CH${ch}</span>
+            `;
+            container.appendChild(legendDiv);
+        });
+    }
+
+    function updateEnabledChannelsInfo() {
+        const count = enabledChannels.length;
+        elements.enabledChannelsInfo.textContent = `已启用: ${count}个通道`;
+        
+        if (count > 0) {
+            elements.startAcquisition.disabled = false;
+        } else {
+            elements.startAcquisition.disabled = true;
+        }
+    }
+
+    function updateDisplayUnit() {
+        const unit = elements.displayUnit.value;
+        if (unit === 'voltage') {
+            elements.currentUnit.textContent = '电压 (V)';
+        } else {
+            elements.currentUnit.textContent = '转换值 (A)';
+        }
+
+        // 更新图表Y轴
+        if (realtimeChart) {
+            updateChartYAxis();
+        }
+    }
+
+    function updateChartYAxis() {
+        const unit = elements.displayUnit.value;
+        let yAxisName, yAxisMin, yAxisMax;
+
+        if (unit === 'voltage') {
+            yAxisName = '电压 (V)';
+            yAxisMin = -10;
+            yAxisMax = 10;
+        } else {
+            yAxisName = '转换值 (A)';
+            yAxisMin = -10;
+            yAxisMax = 10;
+        }
+
+        realtimeChart.setOption({
+            yAxis: {
+                name: yAxisName,
+                min: yAxisMin,
+                max: yAxisMax
+            }
+        });
+    }
+
+    function initializeChart() {
+        realtimeChart = echarts.init(document.getElementById('realtimeChart'));
+
+        const option = {
+            backgroundColor: '#000000',
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                borderColor: '#00ff00',
+                textStyle: { color: '#00ff00', fontFamily: 'monospace' },
+                formatter: function(params) {
+                    let result = `时间: ${parseFloat(params[0].axisValueLabel).toFixed(4)}s<br/>`;
+                    params.forEach(param => {
+                        if (param.value !== null && param.value !== undefined) {
+                            const unit = elements.displayUnit.value === 'voltage' ? 'V' : 'A';
+                            result += `${param.seriesName}: ${parseFloat(param.value).toFixed(4)}${unit}<br/>`;
+                        }
+                    });
+                    return result;
+                }
+            },
+            legend: {
+                top: 15,
+                textStyle: { color: '#00ff00', fontFamily: 'monospace', fontSize: 12 }
+            },
+            xAxis: {
+                type: 'category',
+                name: '时间 (s)',
+                nameTextStyle: { color: '#00ff00', fontFamily: 'monospace' },
+                axisLine: { lineStyle: { color: '#00ff00', width: 2 } },
+                axisTick: { lineStyle: { color: '#00ff00', width: 1 } },
+                axisLabel: {
+                    color: '#00ff00',
+                    fontFamily: 'monospace',
+                    fontSize: 10,
+                    formatter: function(value) {
+                        return parseFloat(value).toFixed(3);
+                    }
+                },
+                splitLine: {
+                    show: true,
+                    lineStyle: { color: '#003300', width: 1, type: 'solid' }
+                },
+                minorSplitLine: {
+                    show: true,
+                    lineStyle: { color: '#001100', width: 0.5, type: 'solid' }
+                },
+                data: []
+            },
+            yAxis: {
+                type: 'value',
+                name: '电压 (V)',
+                nameTextStyle: { color: '#00ff00', fontFamily: 'monospace' },
+                axisLine: { lineStyle: { color: '#00ff00', width: 2 } },
+                axisTick: { lineStyle: { color: '#00ff00', width: 1 } },
+                axisLabel: {
+                    color: '#00ff00',
+                    fontFamily: 'monospace',
+                    fontSize: 10,
+                    formatter: function(value) {
+                        return value.toFixed(2);
+                    }
+                },
+                splitLine: {
+                    show: true,
+                    lineStyle: { color: '#003300', width: 1, type: 'solid' }
+                },
+                minorSplitLine: {
+                    show: true,
+                    lineStyle: { color: '#001100', width: 0.5, type: 'solid' }
+                },
+                min: -10,
+                max: 10
+            },
+            series: [],
+            grid: {
+                left: '8%',
+                right: '5%',
+                bottom: '15%',
+                top: '15%',
+                borderColor: '#00ff00',
+                borderWidth: 2
+            },
+            animation: false,
+            dataZoom: [
+                {
+                    type: 'inside',
+                    xAxisIndex: 0,
+                    filterMode: 'none'
+                },
+                {
+                    type: 'slider',
+                    xAxisIndex: 0,
+                    bottom: 30,
+                    height: 20,
+                    backgroundColor: '#001100',
+                    borderColor: '#00ff00',
+                    fillerColor: 'rgba(0, 255, 0, 0.2)',
+                    handleStyle: { color: '#00ff00' },
+                    textStyle: { color: '#00ff00', fontFamily: 'monospace' }
+                }
+            ]
+        };
+
+        realtimeChart.setOption(option);
+    }
+
+    function connectDevice() {
+        if (socket) socket.close();
+
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws/signal-acquisition/`;
+
+        console.log('🔌 正在连接WebSocket:', wsUrl);
+
+        socket = new WebSocket(wsUrl);
+
+        socket.onopen = function(event) {
+            console.log('✅ WebSocket连接已建立');
+            sendMessage({ type: 'open_device' });
+        };
+
+        socket.onmessage = function(event) {
+            const message = JSON.parse(event.data);
+            handleWebSocketMessage(message);
+        };
+
+        socket.onclose = function(event) {
+            console.log('❌ WebSocket连接已关闭');
+            updateConnectionStatus(false);
+        };
+
+        socket.onerror = function(error) {
+            console.error('🚨 WebSocket错误:', error);
+            showToast('error', '连接错误', 'WebSocket连接失败');
+        };
+    }
+
+    function disconnectDevice() {
+        if (socket) {
+            sendMessage({ type: 'close_device' });
+            socket.close();
+        }
+    }
+
+    function sendMessage(message) {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify(message));
+            console.log('📤 发送消息:', message);
+        }
+    }
+
+    function handleWebSocketMessage(message) {
+        console.log('📥 收到消息:', message);
+
+        switch (message.type) {
+            case 'success':
+                if (message.message.includes('设备打开成功')) {
+                    updateConnectionStatus(true);
+                }
+                showToast('success', '成功', message.message);
+                break;
+
+            case 'error':
+                showToast('error', '错误', message.message);
+                break;
+
+            case 'configure_channels_result':
+                handleChannelConfigResult(message.data);
+                break;
+
+            case 'device_status':
+                updateDeviceStatus(message.data);
+                break;
+
+            case 'acquisition_data':
+                handleAcquisitionData(message.data);
+                break;
+        }
+    }
+
+    function updateConnectionStatus(connected) {
+        isConnected = connected;
+
+        if (connected) {
+            elements.statusIndicator.className = 'w-3 h-3 bg-green-500 rounded-full';
+            elements.statusText.textContent = '设备已连接';
+            elements.connectBtn.disabled = true;
+            elements.disconnectBtn.disabled = false;
+            elements.openChannelConfig.disabled = false;
+            elements.applyConfig.disabled = false;
+            console.log('✅ 设备连接状态: 已连接');
+        } else {
+            elements.statusIndicator.className = 'w-3 h-3 bg-red-500 rounded-full';
+            elements.statusText.textContent = '设备未连接';
+            elements.connectBtn.disabled = false;
+            elements.disconnectBtn.disabled = true;
+            elements.openChannelConfig.disabled = true;
+            elements.applyConfig.disabled = true;
+            elements.startAcquisition.disabled = true;
+            elements.stopAcquisition.disabled = true;
+            console.log('❌ 设备连接状态: 未连接');
+
+            if (isAcquiring) {
+                updateAcquisitionStatus(false);
+            }
+        }
+    }
+
+    function updateAcquisitionStatus(acquiring) {
+        isAcquiring = acquiring;
+
+        if (acquiring) {
+            elements.acquisitionStatus.classList.remove('hidden');
+            elements.startAcquisition.disabled = true;
+            elements.stopAcquisition.disabled = false;
+            dataPacketCount = 0;
+            console.log('🎯 采集状态: 开始采集');
+        } else {
+            elements.acquisitionStatus.classList.add('hidden');
+            elements.startAcquisition.disabled = !isConnected || enabledChannels.length === 0;
+            elements.stopAcquisition.disabled = true;
+            console.log('⏹️ 采集状态: 停止采集');
+            if (dataPacketCount > 0) {
+                console.log(`📊 本次采集统计: 共接收 ${dataPacketCount} 个数据包`);
+            }
+        }
+    }
+
+    function applyAcquisitionConfiguration() {
+        const config = {
+            mode: parseInt(elements.acquisitionMode.value),
+            sample_rate: parseInt(elements.sampleRate.value),
+            oneshot_points: parseInt(elements.oneshotPoints.value)
+        };
+
+        console.log('⚙️ 应用采集配置:', config);
+        sendMessage({
+            type: 'configure_acquisition',
+            config: config
+        });
+    }
+
+    function startAcquisition() {
+        console.log('🚀 开始数据采集...');
+        sendMessage({ type: 'start_acquisition' });
+        updateAcquisitionStatus(true);
+
+        // 清空图表数据
+        chartData = { time: [], ch0: [], ch1: [], ch2: [], ch3: [], ch4: [], ch5: [], ch6: [], ch7: [], ch8: [], ch9: [], ch10: [], ch11: [], ch12: [], ch13: [], ch14: [], ch15: [] };
+    }
+
+    function stopAcquisition() {
+        console.log('⏹️ 停止数据采集...');
+        sendMessage({ type: 'stop_acquisition' });
+        updateAcquisitionStatus(false);
+    }
+
+    function saveData() {
+        console.log('💾 数据存储功能');
+
+        // 获取当前配置信息
+        const config = {
+            sampleRate: elements.sampleRate.value,
+            displayUnit: elements.displayUnit.value,
+            acquisitionMode: elements.acquisitionMode.value,
+            dataPackets: dataPacketCount,
+            channelConfigs: channelConfigs,
+            enabledChannels: enabledChannels,
+            timestamp: new Date().toISOString()
+        };
+
+        console.log('📋 存储配置:', config);
+
+        // 模拟数据存储
+        showToast('success', '数据存储', `已保存 ${dataPacketCount} 个数据包的配置信息`);
+
+        // 这里后期可以添加实际的数据存储逻辑
+        // 比如发送到后端API或下载文件等
+    }
+
+    function handleChannelConfigResult(data) {
+        const results = data.results;
+        let successCount = 0;
+
+        results.forEach(result => {
+            if (result.success) {
+                successCount++;
+            }
+        });
+
+        console.log(`✅ 通道配置结果: ${successCount}/${results.length} 个通道配置成功`);
+
+        if (successCount > 0) {
+            elements.startAcquisition.disabled = false;
+        }
+    }
+
+    function handleAcquisitionData(data) {
+        dataPacketCount++;
+
+        // 注意：后端 Points 参数为每通道点数，channel_data 结构为 {通道号: [点...]}，enabled_channels 顺序与后端一致
+
+        // 详细的本地日志
+        const enabledChannels = data.enabled_channels || [];
+        const pointsPerChannel = data.points_per_channel || 0;
+        const sampleRate = data.sample_rate || 0;
+        const remainingPoints = data.remaining_points || 0;
+        const channelData = data.channel_data || {};
+
+        console.log(`📦 数据包 #${dataPacketCount}:`);
+        console.log(`   启用通道: [${enabledChannels.join(', ')}]`);
+        console.log(`   每通道点数: ${pointsPerChannel}`);
+        console.log(`   采样率: ${sampleRate} Hz`);
+        console.log(`   缓冲区剩余: ${remainingPoints} 点`);
+
+        // 获取当前设置
+        const displayUnit = elements.displayUnit.value;
+
+        // 记录每个通道的数据统计
+        enabledChannels.forEach(ch => {
+            const chData = channelData[ch.toString()];
+            if (chData && chData.length > 0) {
+                const voltageData = chData;
+                const config = channelConfigs[ch] || { sensitivity: 1 };
+                const convertedData = voltageData.map(v => v * config.sensitivity);
+
+                const vMin = Math.min(...voltageData);
+                const vMax = Math.max(...voltageData);
+                const vAvg = voltageData.reduce((a, b) => a + b, 0) / voltageData.length;
+                const vRms = Math.sqrt(voltageData.reduce((a, b) => a + b*b, 0) / voltageData.length);
+
+                const cMin = Math.min(...convertedData);
+                const cMax = Math.max(...convertedData);
+                const cAvg = convertedData.reduce((a, b) => a + b, 0) / convertedData.length;
+                const cRms = Math.sqrt(convertedData.reduce((a, b) => a + b*b, 0) / convertedData.length);
+
+                console.log(`   CH${ch} 电压: 最小=${vMin.toFixed(4)}V, 最大=${vMax.toFixed(4)}V, 平均=${vAvg.toFixed(4)}V, RMS=${vRms.toFixed(4)}V`);
+                console.log(`   CH${ch} 转换值: 最小=${cMin.toFixed(2)}A, 最大=${cMax.toFixed(2)}A, 平均=${cAvg.toFixed(2)}A, RMS=${cRms.toFixed(2)}A`);
+            }
+        });
+
+        // 更新状态信息
+        elements.bufferRemaining.textContent = remainingPoints;
+        elements.acquisitionRate.textContent = sampleRate;
+
+        // 更新图表数据
+        updateChart(data);
+    }
+
+    function updateChart(data) {
+        // 1. 取出数据
+        const timeAxis = data.time_axis;
+        const channelData = data.channel_data;
+        const enabledChannels = data.enabled_channels;
+        const displayUnit = elements.displayUnit.value;
+
+        // 2. 调试日志
+        console.log('📊 更新图表数据:', {
+            timeAxisLength: timeAxis.length,
+            timeAxisFirst5: timeAxis.slice(0, 5),
+            enabledChannels: enabledChannels,
+            channelDataKeys: Object.keys(channelData)
+        });
+
+        // 3. 时间轴健壮性检查与美化
+        let timeLabels = Array.isArray(timeAxis) ? timeAxis.map(t => Number(t).toFixed(4)) : [];
+        if (timeLabels.length === 0) {
+            console.error('❌ 时间轴数据异常:', timeAxis);
+            return;
+        }
+
+        // 4. 构造 seriesData
+        const series = enabledChannels.map((ch, idx) => {
+            let chData = channelData[ch.toString()] || [];
+            if (displayUnit !== 'voltage') {
+                const config = channelConfigs[ch] || { sensitivity: 1 };
+                chData = chData.map(v => v * config.sensitivity);
+            }
+            return {
+                name: `CH${ch}`,
+                type: 'line',
+                showSymbol: false,
+                data: chData,
+                lineStyle: { color: channelColors[ch], width: 2 },
+                sampling: 'lttb'
+            };
+        });
+
+        // 5. 打印 option 调试
+        console.log('📈 图表配置:', {
+            timeLabelsLength: timeLabels.length,
+            timeLabelsFirst5: timeLabels.slice(0, 5),
+            seriesCount: series.length
+        });
+
+        // 6. 更新图表
+        const option = {
+            xAxis: {
+                type: 'category',
+                data: timeLabels,
+                axisLabel: {
+                    formatter: function(value) { return value; }
+                }
+            },
+            series: series
+        };
+        realtimeChart.setOption(option);
+        console.log('✅ 图表更新完成');
+    }
+
+    function showToast(type, title, message) {
+        const toast = document.getElementById('messageToast');
+        const icon = document.getElementById('toastIcon');
+        const titleEl = document.getElementById('toastTitle');
+        const messageEl = document.getElementById('toastMessage');
+
+        if (type === 'success') {
+            icon.innerHTML = '<div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center"><div class="w-3 h-3 bg-green-500 rounded-full"></div></div>';
+        } else {
+            icon.innerHTML = '<div class="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center"><div class="w-3 h-3 bg-red-500 rounded-full"></div></div>';
+        }
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+
+        toast.classList.remove('hidden');
+
+        // 3秒后自动隐藏
+        setTimeout(() => {
+            toast.classList.add('hidden');
+        }, 3000);
+    }
+
+    // 窗口大小变化时重新调整图表
+    window.addEventListener('resize', function() {
+        if (realtimeChart) {
+            realtimeChart.resize();
+        }
+    });
+
+    // 页面卸载时关闭连接
+    window.addEventListener('beforeunload', function() {
+        if (socket) {
+            socket.close();
+        }
+    });
+});
+</script>
+{% endblock %}

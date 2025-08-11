@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DAQ Control</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        .controls button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        #log { border: 1px solid #eee; height: 300px; overflow-y: scroll; background: #f9f9f9; padding: 10px; margin-top: 20px; font-size: 0.9em; white-space: pre-wrap; word-wrap: break-word; }
+        .message-box { margin-top: 10px; padding: 10px; border-radius: 5px; }
+        .status-ok { background-color: #e6ffe6; border: 1px solid #ccebcc; color: #336633; }
+        .status-error { background-color: #ffe6e6; border: 1px solid #ebcccc; color: #cc3333; }
+        .status-warning { background-color: #ffffe6; border: 1px solid #ebffcc; color: #cc9933; }
+        .channel-input { display: inline-block; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DAQ Data Acquisition Control</h1>
+
+        <div class="controls">
+            <p><strong>DAQ Parameters:</strong></p>
+            <div class="param-group">
+                <label for="sampleRate">Sample Rate (Hz):</label>
+                <input type="number" id="sampleRate" value="5000" min="1" step="100" style="width: 80px;">
+            </div>
+            <div class="param-group">
+                <label for="voltageRange">Voltage Range (V):</label>
+                <input type="number" id="voltageRange" value="10.0" min="0.1" step="0.1" style="width: 80px;">
+            </div>
+            <div class="param-group">
+                <label for="pointsPerRead">Points per Read (per channel):</label>
+                <input type="number" id="pointsPerRead" value="500" min="1" step="10" style="width: 80px;">
+            </div>
+            <div class="param-group">
+                <label for="timeoutMs">Timeout (ms):</label>
+                <input type="number" id="timeoutMs" value="1000" min="100" step="100" style="width: 80px;">
+            </div>
+            <div class="param-group">
+                <label for="sensitivityFactor">Sensitivity Factor:</label>
+                <input type="number" id="sensitivityFactor" value="9.8" min="0" step="0.1" style="width: 80px;">
+            </div>
+            <div class="param-group">
+                <label>Enabled Channels (0-3):</label><br>
+                <div class="channel-input">
+                    <input type="checkbox" id="ch0" value="0" checked> <label for="ch0">CH0</label>
+                </div>
+                <div class="channel-input">
+                    <input type="checkbox" id="ch1" value="1" checked> <label for="ch1">CH1</label>
+                </div>
+                <div class="channel-input">
+                    <input type="checkbox" id="ch2" value="2"> <label for="ch2">CH2</label>
+                </div>
+                <div class="channel-input">
+                    <input type="checkbox" id="ch3" value="3"> <label for="ch3">CH3</label>
+                </div>
+            </div>
+
+            <button onclick="startAcquisition()">Start Acquisition</button>
+            <button onclick="stopAcquisition()">Stop Acquisition</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+
+        <div id="statusMessage" class="message-box" style="display: none;"></div>
+
+        <h2>Received Data Log:</h2>
+        <pre id="log"></pre>
+    </div>
+
+    <script>
+        let ws;
+        const logElement = document.getElementById('log');
+        const statusMessageElement = document.getElementById('statusMessage');
+
+        function connectWebSocket() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                console.log("WebSocket already open.");
+                return;
+            }
+            // 使用 WSS (WebSocket Secure) 如果您的网站是 HTTPS
+            // 否则使用 WS (WebSocket)
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws/daq_data/`);
+
+            ws.onopen = function(e) {
+                console.log("WebSocket connection established.");
+                displayStatus("WebSocket connected.", "ok");
+            };
+
+            ws.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                if (data.type === 'daq_data') {
+                    // 接收到采集数据
+                    let logText = "";
+                    for (const channel in data.data) {
+                        const values = data.data[channel];
+                        // 只显示前几个点和总点数，避免日志过长
+                        logText += `${channel}: [${values.slice(0, 5).map(v => v.toFixed(4)).join(', ')}${values.length > 5 ? ', ...' : ''}] (${values.length} points)\n`;
+                    }
+                    appendToLog(logText);
+                } else if (data.status) {
+                    // 接收到状态消息
+                    displayStatus(data.message, data.status);
+                } else {
+                    appendToLog("Unknown message: " + e.data);
+                }
+            };
+
+            ws.onclose = function(e) {
+                console.log("WebSocket connection closed, code: " + e.code + ", reason: " + e.reason);
+                displayStatus("WebSocket disconnected.", "warning");
+            };
+
+            ws.onerror = function(e) {
+                console.error("WebSocket error: ", e);
+                displayStatus("WebSocket error occurred.", "error");
+            };
+        }
+
+        function displayStatus(message, type) {
+            statusMessageElement.textContent = message;
+            statusMessageElement.className = `message-box status-${type}`;
+            statusMessageElement.style.display = 'block';
+            setTimeout(() => {
+                statusMessageElement.style.display = 'none';
+            }, 5000); // 5秒后自动隐藏
+        }
+
+        function appendToLog(message) {
+            logElement.textContent += message + '\n';
+            logElement.scrollTop = logElement.scrollHeight; // 滚动到底部
+        }
+
+        function getSelectedChannels() {
+            const channels = [];
+            for (let i = 0; i <= 3; i++) { // 假设只有 0-3 共 4 个通道
+                const checkbox = document.getElementById(`ch${i}`);
+                if (checkbox && checkbox.checked) {
+                    channels.push(parseInt(checkbox.value));
+                }
+            }
+            return channels;
+        }
+
+        function startAcquisition() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                displayStatus("WebSocket is not connected. Attempting to connect...", "warning");
+                connectWebSocket();
+                // 给点时间连接，然后重试发送命令
+                setTimeout(startAcquisition, 1000);
+                return;
+            }
+
+            const config = {
+                sample_rate_hz: parseInt(document.getElementById('sampleRate').value),
+                enabled_channels: getSelectedChannels(),
+                voltage_range: parseFloat(document.getElementById('voltageRange').value),
+                points_per_read: parseInt(document.getElementById('pointsPerRead').value),
+                timeout_ms: parseInt(document.getElementById('timeoutMs').value),
+                sensitivity_factor: parseFloat(document.getElementById('sensitivityFactor').value),
+            };
+
+            ws.send(JSON.stringify({
+                command: "start_acquisition",
+                config: config
+            }));
+            appendToLog("Sent start_acquisition command.");
+            displayStatus("Attempting to start acquisition...", "info");
+        }
+
+        function stopAcquisition() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    command: "stop_acquisition"
+                }));
+                appendToLog("Sent stop_acquisition command.");
+                displayStatus("Attempting to stop acquisition...", "info");
+            } else {
+                displayStatus("WebSocket is not connected.", "warning");
+            }
+        }
+
+        function clearLog() {
+            logElement.textContent = '';
+        }
+
+        // 页面加载时尝试连接 WebSocket
+        window.onload = connectWebSocket;
+    </script>
+</body>
+</html>

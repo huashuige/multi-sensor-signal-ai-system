@@ -1,0 +1,790 @@
+{% extends 'modules/module_base.html' %}
+{% load static %}
+
+{% block module_content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
+    <div class="max-w-7xl mx-auto space-y-6">
+
+        <!-- 页面标题和导航 -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">AI建模与识别</h1>
+                    <p class="text-gray-600 mt-1">深度学习模型训练与预测分析</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                        <span class="text-sm font-medium text-gray-700">系统就绪</span>
+                    </div>
+                    <button id="refreshDataBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd"></path>
+                        </svg>
+                        查看数据源
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能区域标签页 -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20">
+            <!-- 标签页导航 -->
+            <div class="border-b border-gray-200">
+                <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                    <button id="newTrainingTab" class="tab-button border-b-2 border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 text-sm font-medium" data-tab="new-training">
+                        新建训练集
+                    </button>
+                    <button id="trainingSetListTab" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 text-sm font-medium" data-tab="training-set-list">
+                        训练集合列表
+                    </button>
+
+                    <button id="completedTrainingTab" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 text-sm font-medium" data-tab="completed-training">
+                        训练完成数据集
+                    </button>
+                    <button id="deployedModelsTab" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 text-sm font-medium" data-tab="deployed-models">
+                        已投运模型
+                    </button>
+                </nav>
+            </div>
+
+            <!-- 新建训练集标签页内容 -->
+            <div id="new-training-content" class="tab-content p-6">
+                <div class="max-w-4xl mx-auto">
+                    <!-- 步骤指示器 -->
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="step-indicator flex items-center text-blue-600">
+                                    <div class="step-circle bg-blue-600 text-white rounded-full h-8 w-8 flex items-center justify-center text-sm font-medium">1</div>
+                                    <span class="step-text ml-2 text-sm font-medium">基本信息</span>
+                                </div>
+                                <div class="flex-auto border-t-2 border-blue-600 mx-4"></div>
+                                <div class="step-indicator flex items-center text-gray-500">
+                                    <div class="step-circle bg-gray-200 text-gray-500 rounded-full h-8 w-8 flex items-center justify-center text-sm font-medium">2</div>
+                                    <span class="step-text ml-2 text-sm font-medium">训练模式</span>
+                                </div>
+                                <div class="flex-auto border-t-2 border-gray-300 mx-4"></div>
+                                <div class="step-indicator flex items-center text-gray-500">
+                                    <div class="step-circle bg-gray-200 text-gray-500 rounded-full h-8 w-8 flex items-center justify-center text-sm font-medium">3</div>
+                                    <span class="step-text ml-2 text-sm font-medium">数据选择</span>
+                                </div>
+                                <div class="flex-auto border-t-2 border-gray-300 mx-4"></div>
+                                <div class="step-indicator flex items-center text-gray-500">
+                                    <div class="step-circle bg-gray-200 text-gray-500 rounded-full h-8 w-8 flex items-center justify-center text-sm font-medium">4</div>
+                                    <span class="step-text ml-2 text-sm font-medium">学习参数</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 步骤1：基本信息 -->
+                    <div id="step-1" class="step-content">
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                            </svg>
+                                训练集基本信息
+                        </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">训练集名称</label>
+                                    <input type="text" id="trainingSetName" placeholder="请输入训练集名称" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">训练集描述</label>
+                                    <input type="text" id="trainingSetDescription" placeholder="请输入训练集描述" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            </div>
+                            <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">训练开始时间</label>
+                                    <input type="datetime-local" id="startTime" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            </div>
+                            <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">创建者</label>
+                                    <input type="text" id="creator" value="当前用户" readonly class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500">
+                                </div>
+                            </div>
+                            <div class="mt-6 flex justify-end">
+                                <button id="nextStep1" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                                    下一步
+                            </button>
+                    </div>
+                </div>
+            </div>
+
+                    <!-- 步骤2：训练模式 -->
+                    <div id="step-2" class="step-content hidden">
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                                训练模式配置
+                        </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">模型类型</label>
+                                        <select id="modelType" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                            <option value="">请选择模型类型</option>
+                                    <option value="cnn">卷积神经网络 (CNN)</option>
+                                    <option value="lstm">长短期记忆网络 (LSTM)</option>
+                                    <option value="gru">门控循环单元 (GRU)</option>
+                                </select>
+                            </div>
+                            <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">训练模式</label>
+                                        <div class="space-y-3">
+                                            <label class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
+                                                <input type="radio" name="trainingMode" value="expert" class="mr-3 text-blue-600 focus:ring-blue-500">
+                                                <div>
+                                                    <div class="font-medium text-gray-800">专家模式</div>
+                                                    <div class="text-sm text-gray-600">可配置所有高级参数</div>
+                                                </div>
+                                            </label>
+                                            <label class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
+                                                <input type="radio" name="trainingMode" value="user" class="mr-3 text-blue-600 focus:ring-blue-500">
+                                                <div>
+                                                    <div class="font-medium text-gray-800">用户自选</div>
+                                                    <div class="text-sm text-gray-600">仅配置基础参数</div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <div class="bg-blue-50 rounded-lg p-4">
+                                        <h4 class="font-medium text-blue-800 mb-2">模型说明</h4>
+                                        <div class="text-sm text-blue-700 space-y-2">
+                                            <p><strong>CNN:</strong> 适用于图像和序列数据分类</p>
+                                            <p><strong>LSTM:</strong> 适用于时间序列预测（可用）</p>
+                                            <p><strong>GRU:</strong> 轻量级循环网络</p>
+                                        </div>
+                                    </div>
+                                    <div class="bg-green-50 rounded-lg p-4">
+                                        <h4 class="font-medium text-green-800 mb-2">模式说明</h4>
+                                        <div class="text-sm text-green-700 space-y-2">
+                                            <p><strong>专家模式:</strong> 适合有经验的用户，可调整所有超参数</p>
+                                            <p><strong>用户自选:</strong> 适合新手用户，只需配置基础参数</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-6 flex justify-between">
+                                <button id="prevStep2" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                                    上一步
+                                </button>
+                                <button id="nextStep2" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                                    下一步
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 步骤3：数据选择 -->
+                    <div id="step-3" class="step-content hidden">
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd"></path>
+                                </svg>
+                                数据选择与分配
+                            </h3>
+                            <div class="space-y-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">数据源选择</label>
+                                        <p class="text-xs text-gray-500">选择用于训练的数据源（单选）</p>
+                                    </div>
+                                    <button id="refreshDataSources" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        刷新数据源
+                                    </button>
+                                </div>
+                                
+                                <!-- 数据源选择区域 -->
+                                <div class="text-center py-8">
+                                    <div class="mb-4">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        <h3 class="text-lg font-medium text-gray-900 mb-2">选择训练数据源</h3>
+                                        <p class="text-sm text-gray-500 mb-6">请选择一个数据源用于模型训练</p>
+                                    </div>
+                                    
+                                    <!-- 选择数据源按钮 -->
+                                    <button id="selectDataSourceBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-3 mx-auto">
+                                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        选择数据源
+                                    </button>
+                                </div>
+                                
+                                <!-- 已选择的数据源确认区域 -->
+                                <div id="selectedDataSource" class="hidden">
+                                    <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-4 h-4 bg-green-600 rounded-full flex items-center justify-center">
+                                                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-medium text-green-900">已选择数据源</h4>
+                                                    <p id="selectedDataSourceInfo" class="text-sm text-green-700"></p>
+                                                </div>
+                                            </div>
+                                            <button id="changeDataSource" class="text-green-600 hover:text-green-800 text-sm font-medium">
+                                                更换选择
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 数据分配比例 -->
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">训练集比例</label>
+                                        <input type="number" id="trainRatio" value="70" min="50" max="90" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <p class="text-xs text-gray-500 mt-1">用于训练的数据比例</p>
+                            </div>
+                            <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">验证集比例</label>
+                                        <input type="number" id="valRatio" value="15" min="5" max="30" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <p class="text-xs text-gray-500 mt-1">用于验证的数据比例</p>
+                            </div>
+                            <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">测试集比例</label>
+                                        <input type="number" id="testRatio" value="15" min="5" max="30" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <p class="text-xs text-gray-500 mt-1">用于测试的数据比例</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-6 flex justify-between">
+                                <button id="prevStep3" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                                    上一步
+                                </button>
+                                <button id="nextStep3" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                                    下一步
+                            </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 步骤4：学习参数 -->
+                    <div id="step-4" class="step-content hidden">
+                        <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-6 border border-orange-200">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                            </svg>
+                                学习参数配置
+                        </h3>
+                            
+                            <!-- 基础参数 -->
+                            <div id="basicParams" class="space-y-6">
+                                <h4 class="text-md font-semibold text-gray-800 border-b border-gray-200 pb-2">基础参数</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">学习率</label>
+                                        <input type="number" id="learningRate" value="0.001" step="0.0001" min="0.0001" max="1" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <p class="text-xs text-gray-500 mt-1">推荐范围: 0.0001 - 0.1</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">训练轮数</label>
+                                        <input type="number" id="epochs" value="100" min="1" max="1000" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <p class="text-xs text-gray-500 mt-1">推荐范围: 50 - 500</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">批次大小</label>
+                                        <input type="number" id="batchSize" value="32" min="1" max="512" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <p class="text-xs text-gray-500 mt-1">推荐范围: 16 - 256</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">优化器</label>
+                                        <select id="optimizer" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                            <option value="adam">Adam</option>
+                                            <option value="sgd">SGD</option>
+                                            <option value="rmsprop">RMSprop</option>
+                                            <option value="adamw">AdamW</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">窗口大小</label>
+                                        <input type="number" id="windowSize" value="24" min="1" max="1000" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <p class="text-xs text-gray-500 mt-1">用于预测的历史数据窗口大小</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">预测步长</label>
+                                        <input type="number" id="horizon" value="12" min="1" max="100" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <p class="text-xs text-gray-500 mt-1">预测未来多少个时间步</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 专家模式参数 -->
+                            <div id="expertParams" class="space-y-6 mt-6 hidden">
+                                <h4 class="text-md font-semibold text-gray-800 border-b border-gray-200 pb-2">专家模式参数</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">权重衰减</label>
+                                        <input type="number" id="weightDecay" value="0.0001" step="0.0001" min="0" max="0.1" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <p class="text-xs text-gray-500 mt-1">L2正则化系数</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Dropout率</label>
+                                        <input type="number" id="dropoutRate" value="0.2" step="0.05" min="0" max="0.8" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <p class="text-xs text-gray-500 mt-1">防止过拟合 (0 - 0.8)</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">损失函数</label>
+                                        <select id="lossFunction" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                            <option value="mse">均方误差 (MSE)</option>
+                                            <option value="mae">平均绝对误差 (MAE)</option>
+                                            <option value="crossentropy">交叉熵 (Cross Entropy)</option>
+                                            <option value="huber">Huber Loss</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">早停耐心值</label>
+                                        <input type="number" id="earlyStoppingPatience" value="10" min="1" max="50" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <p class="text-xs text-gray-500 mt-1">连续多少轮无改善后停止</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">学习率调度</label>
+                                        <select id="learningRateScheduler" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                            <option value="none">不使用调度器</option>
+                                            <option value="step">Step LR</option>
+                                            <option value="cosine">Cosine Annealing</option>
+                                            <option value="exponential">Exponential Decay</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">随机种子</label>
+                                        <input type="number" id="randomSeed" value="42" min="1" max="999999" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <p class="text-xs text-gray-500 mt-1">确保结果可重现</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">LSTM层数</label>
+                                        <input type="number" id="lstmLayers" value="1" min="1" max="10" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <p class="text-xs text-gray-500 mt-1">LSTM网络层数 (1-10)</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">隐藏层大小</label>
+                                        <input type="number" id="hiddenSize" value="64" min="16" max="512" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <p class="text-xs text-gray-500 mt-1">LSTM隐藏层神经元数量</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">评估指标</label>
+                                        <select id="evaluationMetric" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                            <option value="mse">均方误差 (MSE)</option>
+                                            <option value="mae">平均绝对误差 (MAE)</option>
+                                            <option value="rmse">均方根误差 (RMSE)</option>
+                                            <option value="mape">平均绝对百分比误差 (MAPE)</option>
+                                        </select>
+                                        <p class="text-xs text-gray-500 mt-1">模型性能评估指标</p>
+                                    </div>
+                        </div>
+                            </div>
+                            
+                            <div class="mt-6 flex justify-between">
+                                <button id="prevStep4" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                                    上一步
+                                </button>
+                                <button id="saveTrainingSet" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                                    保存训练集
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 训练集合列表标签页内容 -->
+            <div id="training-set-list-content" class="tab-content p-6 hidden">
+                <div class="space-y-6">
+                    <!-- 页面标题和操作栏 -->
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-semibold text-gray-800">训练集合列表</h2>
+                        <button id="addTrainingSetBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            添加
+                        </button>
+                    </div>
+
+                    <!-- 搜索栏 -->
+                    <div class="flex gap-4">
+                        <input type="text" id="searchTrainingSetName" placeholder="请输入训练集名称" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                        <input type="text" id="searchTrainingSetDesc" placeholder="请输入训练集描述" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                        <button id="searchTrainingSetBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                            查询
+                        </button>
+                    </div>
+
+                    <!-- 训练集合列表表格 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <input type="checkbox" id="selectAllTrainingSets" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">训练集名称</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">训练集描述</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">选择模式</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">开始时间</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">测点数</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">记录数</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建人</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">维护</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="trainingSetListTable" class="bg-white divide-y divide-gray-200">
+                                    <!-- 动态生成训练集合列表 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 分页控制 -->
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-700">
+                            共 <span id="trainingSetTotalCount">0</span> 条
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <select id="trainingSetPageSize" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="5">5条/页</option>
+                                <option value="10">10条/页</option>
+                                <option value="20">20条/页</option>
+                                </select>
+                            <div class="flex items-center gap-1">
+                                <button id="trainingSetPrevPage" class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50">上一页</button>
+                                <span id="trainingSetCurrentPage" class="px-3 py-2 text-sm text-gray-700">1</span>
+                                <button id="trainingSetNextPage" class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50">下一页</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                            </div>
+
+
+
+            <!-- 训练完成数据集标签页内容 -->
+            <div id="completed-training-content" class="tab-content p-6 hidden">
+                <div class="space-y-6">
+                    <!-- 搜索栏 -->
+                    <div class="flex gap-4">
+                        <input type="text" id="searchCompletedName" placeholder="请输入训练集名称" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                        <input type="text" id="searchCompletedDesc" placeholder="请输入训练集描述" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                        <button id="searchCompletedBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                            查询
+                        </button>
+                    </div>
+
+                    <!-- 训练完成数据集表格 -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">训练集名称</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">训练开始时间</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">训练用时(分)</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">训练进度</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">测点数</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">记录数</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">模型验证</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="completedTrainingTable" class="bg-white divide-y divide-gray-200">
+                                    <!-- 动态生成训练完成数据集 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 分页控制 -->
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-700">
+                            共 <span id="completedTotalCount">0</span> 条
+                            </div>
+                        <div class="flex items-center gap-2">
+                            <select id="completedPageSize" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="5">5条/页</option>
+                                <option value="10">10条/页</option>
+                                <option value="20">20条/页</option>
+                            </select>
+                            <div class="flex items-center gap-1">
+                                <button class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50">上一页</button>
+                                <span class="px-3 py-2 text-sm text-gray-700">1</span>
+                                <button class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50">下一页</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 已投运模型标签页内容 -->
+            <div id="deployed-models-content" class="tab-content p-6 hidden">
+                <div class="space-y-6">
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                            已投运模型管理
+                    </h3>
+                        <div id="deployedModelsList" class="space-y-4">
+                            <!-- 动态生成已投运模型列表 -->
+                        <div class="text-gray-500 text-center py-8">
+                            <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                                <p>暂无已投运模型</p>
+                                <p class="text-sm">请先完成模型训练并投运</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 返回按钮 -->
+        <div class="text-center">
+            <a href="{% url 'all_acquire' %}" class="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-8 rounded-xl transition-colors duration-200 shadow-lg">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                </svg>
+                返回信号采集模块
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Toast通知 -->
+<div id="toast" class="fixed top-4 right-4 z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm">
+        <div class="flex items-center gap-3">
+            <div id="toastIcon" class="w-6 h-6"></div>
+            <div>
+                <h4 id="toastTitle" class="font-semibold text-gray-900"></h4>
+                <p id="toastMessage" class="text-sm text-gray-600"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 数据源选择弹窗 -->
+<style>
+    /* 自定义滚动条样式 */
+    .modal-scrollbar::-webkit-scrollbar {
+        width: 10px;
+    }
+    .modal-scrollbar::-webkit-scrollbar-track {
+        background: #f3f4f6;
+        border-radius: 5px;
+    }
+    .modal-scrollbar::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 5px;
+    }
+    .modal-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+    }
+    /* Firefox 滚动条样式 */
+    .modal-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: #d1d5db #f3f4f6;
+    }
+</style>
+<div id="dataSourceModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+            <!-- 弹窗头部 -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+                <h3 class="text-lg font-semibold text-gray-800">选择数据源</h3>
+                <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- 弹窗内容区域 -->
+            <div class="flex-1 flex flex-col min-h-0">
+                <!-- 搜索栏 -->
+                <div class="p-6 pb-4 flex-shrink-0">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <input type="text" id="modalSearch" placeholder="搜索数据源名称..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                    </div>
+                </div>
+                
+                <!-- 数据源列表 -->
+                <div class="flex-1 px-6 overflow-hidden">
+                    <div id="modalDataSourceList" class="space-y-3 h-full overflow-y-auto pb-2 modal-scrollbar" style="min-height: 300px;">
+                        <!-- 动态生成数据源列表 -->
+                    </div>
+                </div>
+                
+                <!-- 分页控件 -->
+                <div id="modalPagination" class="flex items-center justify-between px-6 py-4 border-t border-gray-200 flex-shrink-0">
+                    <div class="text-sm text-gray-500">
+                        显示 <span id="modalCurrentPageInfo">1-5</span> 共 <span id="modalTotalItems">0</span> 项
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button id="modalPrevPage" class="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            上一页
+                        </button>
+                        <span id="modalPageNumbers" class="flex space-x-1">
+                            <!-- 页码按钮 -->
+                        </span>
+                        <button id="modalNextPage" class="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            下一页
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 弹窗底部 -->
+            <div class="flex items-center justify-between p-6 border-t border-gray-200 flex-shrink-0">
+                <div class="text-sm text-gray-500">
+                    <span id="selectionStatus">请选择一个数据源</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="cancelSelection" class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">
+                        取消
+                    </button>
+                    <button id="confirmSelection" class="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        <svg class="w-4 h-4 mr-2 inline" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        确认选择
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 数据源管理模态框 -->
+<div id="dataSourceManagementModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] flex flex-col">
+            <!-- 弹窗头部 -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
+                <h3 class="text-lg font-semibold text-gray-800">数据源管理</h3>
+                <button id="closeDataSourceManagementModal" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- 弹窗内容区域 -->
+            <div class="flex-1 flex flex-col min-h-0">
+                <!-- 搜索栏 -->
+                <div class="p-4 pb-3 flex-shrink-0">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <input type="text" id="managementSearch" placeholder="搜索数据源名称..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                    </div>
+                </div>
+                
+                <!-- 数据源列表 -->
+                <div class="flex-1 px-4 overflow-hidden">
+                    <div id="managementDataSourceList" class="space-y-2 h-full overflow-y-auto pb-2 modal-scrollbar" style="max-height: 400px;">
+                        <!-- 动态生成数据源列表 -->
+                    </div>
+                </div>
+                
+                <!-- 分页控件 -->
+                <div id="managementPagination" class="flex items-center justify-between px-4 py-3 border-t border-gray-200 flex-shrink-0">
+                    <div class="text-sm text-gray-500">
+                        显示 <span id="managementCurrentPageInfo">1-5</span> 共 <span id="managementTotalItems">0</span> 项
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button id="managementPrevPage" class="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            上一页
+                        </button>
+                        <span id="managementPageNumbers" class="flex space-x-1">
+                            <!-- 页码按钮 -->
+                        </span>
+                        <button id="managementNextPage" class="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            下一页
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 弹窗底部 -->
+            <div class="flex items-center justify-between p-4 border-t border-gray-200 flex-shrink-0">
+                <div class="text-sm text-gray-500">
+                    <span id="managementStatus">数据源管理</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="closeManagementModal" class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认模态框 -->
+<div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="flex-shrink-0">
+                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-lg font-medium text-gray-900">确认删除</h3>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-500">
+                        确定要删除数据源 "<span id="deleteConfirmName"></span>" 吗？此操作将软删除该数据源。
+                    </p>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-3 flex justify-end space-x-3">
+                <button id="cancelDelete" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                    取消
+                </button>
+                <button id="confirmDelete" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                    确认删除
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/deep_learning.js' %}"></script>
+{% endblock %}

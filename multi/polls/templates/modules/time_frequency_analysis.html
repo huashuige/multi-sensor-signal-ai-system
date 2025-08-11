@@ -1,0 +1,582 @@
+{% extends 'modules/module_base.html' %}
+
+{% block module_content %}
+<div class="space-y-8">
+    <!-- 文件上传区域 -->
+    <div class="bg-white rounded-xl p-6 shadow-lg">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+            <i data-lucide="upload" class="h-5 w-5 mr-2 text-blue-600"></i>
+            数据文件上传
+        </h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- 文件选择 -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">选择数据文件</label>
+                <div class="relative">
+                    <input type="file" id="dataFile" accept=".mat,.csv,.npy"
+                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-300 rounded-lg cursor-pointer">
+                </div>
+                <p class="text-xs text-gray-500 mt-1">支持格式: .mat, .csv, .npy</p>
+            </div>
+
+            <!-- 采样率设置 -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">采样率 (Hz)</label>
+                <input type="number" id="samplingRate" value="16384" min="1" max="1000000"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                <p class="text-xs text-gray-500 mt-1">默认: 16384 Hz</p>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="flex flex-wrap gap-3 mt-6">
+            <button id="loadDataBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                <i data-lucide="play" class="h-4 w-4 mr-2"></i>
+                加载数据
+            </button>
+            <button id="fftBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center disabled:opacity-50" disabled>
+                <i data-lucide="zap" class="h-4 w-4 mr-2"></i>
+                FFT变换
+            </button>
+        </div>
+    </div>
+
+    <!-- 时域波形显示 -->
+    <div class="bg-white rounded-xl p-6 shadow-lg">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+            <i data-lucide="activity" class="h-5 w-5 mr-2 text-green-600"></i>
+            时域波形
+        </h2>
+        <div id="timeDomainChart" style="height: 400px;" class="border border-gray-200 rounded-lg"></div>
+    </div>
+
+    <!-- 频域波形显示 -->
+    <div class="bg-white rounded-xl p-6 shadow-lg">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+            <i data-lucide="bar-chart-3" class="h-5 w-5 mr-2 text-purple-600"></i>
+            频域波形
+        </h2>
+        <div id="frequencyDomainChart" style="height: 400px;" class="border border-gray-200 rounded-lg"></div>
+    </div>
+
+    <!-- 变换方法选择与结果 -->
+    <div class="bg-white rounded-xl p-6 shadow-lg">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+            <i data-lucide="settings" class="h-5 w-5 mr-2 text-orange-600"></i>
+            高级变换分析
+        </h2>
+
+        <!-- 变换方法选择 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500 transition-colors transform-method" data-method="cep">
+                <div class="flex items-center mb-2">
+                    <input type="radio" name="transformMethod" value="cep" id="cepMethod" class="mr-2">
+                    <label for="cepMethod" class="font-medium text-gray-800">CEP变换</label>
+                </div>
+                <p class="text-sm text-gray-600">倒谱编辑处理，支持时间区间剔除</p>
+                <div class="mt-2 text-xs text-blue-600">• 高精度故障特征提取</div>
+            </div>
+
+            <div class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500 transition-colors transform-method" data-method="cpw">
+                <div class="flex items-center mb-2">
+                    <input type="radio" name="transformMethod" value="cpw" id="cpwMethod" class="mr-2">
+                    <label for="cpwMethod" class="font-medium text-gray-800">CPW变换</label>
+                </div>
+                <p class="text-sm text-gray-600">倒谱预白化处理</p>
+                <div class="mt-2 text-xs text-blue-600">• 谱线预白化技术</div>
+            </div>
+
+            <div class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500 transition-colors transform-method" data-method="lcep">
+                <div class="flex items-center mb-2">
+                    <input type="radio" name="transformMethod" value="lcep" id="lcepMethod" class="mr-2">
+                    <label for="lcepMethod" class="font-medium text-gray-800">LCEP变换</label>
+                </div>
+                <p class="text-sm text-gray-600">局部倒谱编辑处理</p>
+                <div class="mt-2 text-xs text-blue-600">• 局部频段分析</div>
+            </div>
+        </div>
+
+        <!-- 横轴范围设置 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-blue-50 rounded-lg">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i data-lucide="zoom-in" class="h-4 w-4 inline mr-1"></i>
+                    频率显示下限 (Hz)
+                </label>
+                <input type="number" id="freqDisplayMin" value="0" min="0"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i data-lucide="zoom-out" class="h-4 w-4 inline mr-1"></i>
+                    频率显示上限 (Hz)
+                </label>
+                <input type="number" id="freqDisplayMax" value="180" min="1"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            </div>
+        </div>
+
+        <!-- CEP参数设置 -->
+        <div id="cepParams" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">剔除起始时间 (秒)</label>
+                <input type="number" id="cepTimeStart" value="0.01" min="0" step="0.001"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">剔除结束时间 (秒)</label>
+                <input type="number" id="cepTimeEnd" value="0.05" min="0" step="0.001"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            </div>
+        </div>
+
+        <!-- LCEP参数设置 -->
+        <div id="lcepParams" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">频带下限 (Hz)</label>
+                <input type="number" id="freqLow" value="10" min="0"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">频带上限 (Hz)</label>
+                <input type="number" id="freqHigh" value="1000" min="1"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            </div>
+        </div>
+
+        <!-- 执行变换按钮 -->
+        <button id="executeTransformBtn" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-colors duration-200 flex items-center disabled:opacity-50" disabled>
+            <i data-lucide="cpu" class="h-4 w-4 mr-2"></i>
+            执行变换分析
+        </button>
+    </div>
+
+    <!-- 变换结果显示 -->
+    <div class="bg-white rounded-xl p-6 shadow-lg">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+            <i data-lucide="trending-up" class="h-5 w-5 mr-2 text-red-600"></i>
+            变换结果
+        </h2>
+        <div id="transformResultChart" style="height: 400px;" class="border border-gray-200 rounded-lg"></div>
+    </div>
+
+    <!-- 返回按钮 -->
+    <div class="text-center">
+        <a href="{% url 'home' %}" class="inline-block bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-8 rounded-lg transition-colors duration-200">
+            返回主页
+        </a>
+    </div>
+</div>
+
+<!-- 加载提示模态框 -->
+<div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-sm mx-4">
+        <div class="flex items-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+            <span class="text-gray-700">正在处理数据...</span>
+        </div>
+    </div>
+</div>
+
+{% load static %}
+<script src="{% static 'js/echarts.min.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化图表
+    const timeDomainChart = echarts.init(document.getElementById('timeDomainChart'));
+    const frequencyDomainChart = echarts.init(document.getElementById('frequencyDomainChart'));
+    const transformResultChart = echarts.init(document.getElementById('transformResultChart'));
+
+    // 全局变量
+    let currentDataInfo = null;
+
+    // 图表配置
+    const chartOptions = {
+        timeDomain: {
+            title: { text: '时域波形', left: 'center' },
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    const time = parseFloat(params[0].axisValue).toFixed(4);
+                    const value = parseFloat(params[0].value[1]).toFixed(3);
+                    return `时间: ${time}s<br/>幅值: ${value}mV`;
+                }
+            },
+            xAxis: {
+                type: 'category',
+                name: '时间 (s)',
+                axisLabel: {
+                    formatter: function(value) {
+                        return parseFloat(value).toFixed(3);
+                    }
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: '幅值 (mV)',
+                axisLabel: {
+                    formatter: function(value) {
+                        return value.toFixed(2);
+                    }
+                }
+            },
+            series: [{ type: 'line', sampling: 'lttb', symbol: 'none' }],
+            grid: { left: '12%', right: '10%', bottom: '15%' }
+        },
+        frequencyDomain: {
+            title: { text: '频域波形', left: 'center' },
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    const freq = parseFloat(params[0].axisValue).toFixed(1);
+                    const value = parseFloat(params[0].value[1]).toFixed(4);
+                    return `频率: ${freq}Hz<br/>幅值: ${value}`;
+                }
+            },
+            xAxis: {
+                type: 'value',  // 改为value类型以便更好控制刻度
+                name: '频率 (Hz)',
+                min: 0,
+                max: 'dataMax',
+                interval: 'auto',
+                axisLabel: {
+                    formatter: function(value) {
+                        return Math.round(value);
+                    }
+                },
+                splitLine: {
+                    show: true,
+                    lineStyle: {
+                        color: '#f0f0f0'
+                    }
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: '幅值',
+                axisLabel: {
+                    formatter: function(value) {
+                        if (value >= 1000) {
+                            return (value / 1000).toFixed(1) + 'k';
+                        }
+                        return value.toFixed(2);
+                    }
+                }
+            },
+            series: [{ type: 'line', sampling: 'lttb', symbol: 'none' }],
+            grid: { left: '12%', right: '10%', bottom: '15%' }
+        },
+        transformResult: {
+            title: { text: '变换结果', left: 'center' },
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    const freq = parseFloat(params[0].axisValue).toFixed(1);
+                    const value = parseFloat(params[0].value[1]).toFixed(4);
+                    return `频率: ${freq}Hz<br/>幅值: ${value}`;
+                }
+            },
+            xAxis: {
+                type: 'value',  // 改为value类型
+                name: '频率 (Hz)',
+                min: 0,
+                max: 180,
+                interval: 20,  // 设置固定间隔为20Hz
+                axisLabel: {
+                    formatter: function(value) {
+                        return Math.round(value);
+                    }
+                },
+                splitLine: {
+                    show: true,
+                    lineStyle: {
+                        color: '#f0f0f0'
+                    }
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: '幅值',
+                axisLabel: {
+                    formatter: function(value) {
+                        return value.toFixed(3);
+                    }
+                }
+            },
+            series: [{ type: 'line', sampling: 'lttb', symbol: 'none' }],
+            grid: { left: '12%', right: '10%', bottom: '15%' }
+        }
+    };
+
+    // 初始化空图表
+    timeDomainChart.setOption(chartOptions.timeDomain);
+    frequencyDomainChart.setOption(chartOptions.frequencyDomain);
+    transformResultChart.setOption(chartOptions.transformResult);
+
+    // 文件加载
+    document.getElementById('loadDataBtn').addEventListener('click', function() {
+        const fileInput = document.getElementById('dataFile');
+        const samplingRateInput = document.getElementById('samplingRate');
+
+        if (!fileInput.files[0]) {
+            alert('请先选择数据文件');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        formData.append('sampling_rate', samplingRateInput.value);
+
+        showLoading(true);
+
+        fetch('/api/upload-data/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                currentDataInfo = data;
+                plotTimeDomain(data.time_domain_data);
+                document.getElementById('fftBtn').disabled = false;
+                showLoading(false);
+            } else {
+                alert('文件处理失败: ' + data.error);
+                showLoading(false);
+            }
+        })
+        .catch(error => {
+            alert('网络错误: ' + error.message);
+            showLoading(false);
+        });
+    });
+
+    // FFT变换
+    document.getElementById('fftBtn').addEventListener('click', function() {
+        if (!currentDataInfo) return;
+
+        showLoading(true);
+
+        fetch('/api/perform-fft/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                data_encoded: currentDataInfo.data_encoded,
+                sampling_rate: currentDataInfo.sampling_rate,
+                data_dtype: currentDataInfo.data_dtype
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                plotFrequencyDomain(data.frequency_data);
+                document.getElementById('executeTransformBtn').disabled = false;
+                showLoading(false);
+            } else {
+                alert('FFT计算失败: ' + data.error);
+                showLoading(false);
+            }
+        })
+        .catch(error => {
+            alert('网络错误: ' + error.message);
+            showLoading(false);
+        });
+    });
+
+    // 变换方法选择
+    document.querySelectorAll('.transform-method').forEach(method => {
+        method.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
+
+            // 显示/隐藏参数设置
+            const cepParams = document.getElementById('cepParams');
+            const lcepParams = document.getElementById('lcepParams');
+
+            cepParams.classList.add('hidden');
+            lcepParams.classList.add('hidden');
+
+            if (radio.value === 'cep') {
+                cepParams.classList.remove('hidden');
+            } else if (radio.value === 'lcep') {
+                lcepParams.classList.remove('hidden');
+            }
+
+            // 更新样式
+            document.querySelectorAll('.transform-method').forEach(m => {
+                m.classList.remove('border-blue-500', 'bg-blue-50');
+            });
+            this.classList.add('border-blue-500', 'bg-blue-50');
+        });
+    });
+
+    // 执行变换
+    document.getElementById('executeTransformBtn').addEventListener('click', function() {
+        const selectedMethod = document.querySelector('input[name="transformMethod"]:checked');
+        if (!selectedMethod || !currentDataInfo) return;
+
+        const requestData = {
+            data_encoded: currentDataInfo.data_encoded,
+            sampling_rate: currentDataInfo.sampling_rate,
+            data_dtype: currentDataInfo.data_dtype,
+            method: selectedMethod.value
+        };
+
+        // 添加方法特定参数
+        if (selectedMethod.value === 'cep') {
+            requestData.t_start = parseFloat(document.getElementById('cepTimeStart').value);
+            requestData.t_end = parseFloat(document.getElementById('cepTimeEnd').value);
+        } else if (selectedMethod.value === 'lcep') {
+            requestData.freq_low = parseFloat(document.getElementById('freqLow').value);
+            requestData.freq_high = parseFloat(document.getElementById('freqHigh').value);
+        }
+
+        showLoading(true);
+
+        fetch('/api/perform-transform/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                plotTransformResult(data.transform_data, data.method);
+                showLoading(false);
+            } else {
+                alert('变换计算失败: ' + data.error);
+                showLoading(false);
+            }
+        })
+        .catch(error => {
+            alert('网络错误: ' + error.message);
+            showLoading(false);
+        });
+    });
+
+    // 绘制时域波形
+    function plotTimeDomain(data) {
+        const option = {
+            ...chartOptions.timeDomain,
+            series: [{
+                type: 'line',
+                data: data,
+                sampling: 'lttb',
+                symbol: 'none',
+                lineStyle: { color: '#3b82f6', width: 1.5 }
+            }]
+        };
+
+        timeDomainChart.setOption(option);
+    }
+
+    // 绘制频域波形
+    function plotFrequencyDomain(data) {
+        // 自动设置合理的显示范围
+        const maxFreq = Math.max(...data.map(point => point[0]));
+        const displayMax = Math.min(maxFreq, 5000); // 默认最大显示5kHz
+
+        // 计算合适的刻度间隔
+        let interval;
+        if (displayMax <= 200) {
+            interval = 20;
+        } else if (displayMax <= 1000) {
+            interval = 100;
+        } else if (displayMax <= 5000) {
+            interval = 500;
+        } else {
+            interval = 1000;
+        }
+
+        const option = {
+            ...chartOptions.frequencyDomain,
+            xAxis: {
+                ...chartOptions.frequencyDomain.xAxis,
+                max: displayMax,
+                interval: interval
+            },
+            series: [{
+                type: 'line',
+                data: data,
+                sampling: 'lttb',
+                symbol: 'none',
+                lineStyle: { color: '#10b981', width: 2 }
+            }]
+        };
+
+        frequencyDomainChart.setOption(option);
+    }
+
+    // 绘制变换结果
+    function plotTransformResult(data, methodName) {
+        const freqMin = parseFloat(document.getElementById('freqDisplayMin').value) || 0;
+        const freqMax = parseFloat(document.getElementById('freqDisplayMax').value) || 180;
+
+        // 计算合适的刻度间隔
+        const range = freqMax - freqMin;
+        let interval;
+        if (range <= 200) {
+            interval = 20;
+        } else if (range <= 500) {
+            interval = 50;
+        } else if (range <= 1000) {
+            interval = 100;
+        } else {
+            interval = 200;
+        }
+
+        const option = {
+            ...chartOptions.transformResult,
+            title: { text: `${methodName} 变换结果 (${freqMin}-${freqMax}Hz)`, left: 'center' },
+            xAxis: {
+                ...chartOptions.transformResult.xAxis,
+                min: freqMin,
+                max: freqMax,
+                interval: interval
+            },
+            series: [{
+                type: 'line',
+                data: data,
+                sampling: 'lttb',
+                symbol: 'none',
+                lineStyle: { color: '#8b5cf6', width: 2 }
+            }]
+        };
+
+        transformResultChart.setOption(option);
+    }
+
+    // 显示/隐藏加载提示
+    function showLoading(show) {
+        const modal = document.getElementById('loadingModal');
+        if (show) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        } else {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    }
+
+    // 响应式图表
+    window.addEventListener('resize', function() {
+        timeDomainChart.resize();
+        frequencyDomainChart.resize();
+        transformResultChart.resize();
+    });
+
+    // 初始化Lucide图标
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+        document.body.classList.add('lucide-loaded');
+        console.log('✅ Lucide图标已加载');
+    } else {
+        console.warn('⚠️ Lucide图标库未加载，使用备用图标');
+    }
+});
+</script>
+{% endblock %}

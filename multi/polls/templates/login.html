@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    {% load static %}
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>故障信号采集与分析平台 - 用户认证</title>
+    <link rel="icon" href="logo.png" type="image/png">
+
+    <!-- Google Fonts -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/google-fonts.css' %}">
+
+    <style>
+        :root {
+            --primary-blue: #66D9FF;
+            --cyber-gradient: linear-gradient(135deg, #66D9FF 0%, #8C52FF 100%);
+            --neon-shadow: 0 0 15px rgba(102, 217, 255, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', 'HarmonyOS Sans SC', 'Microsoft YaHei', monospace;
+            background: #0A0A2E;
+            color: #E0E0FF;
+            line-height: 1.6; /* 减小整体行高 */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 赛博朋克风格标题 */
+        header {
+            background: var(--cyber-gradient);
+            padding: 1rem 1.2rem; /* 进一步减小标题内边距 */
+            box-shadow: var(--neon-shadow);
+        }
+
+       .platform-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem; /* 进一步减小标题字体大小 */
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #FFF 20%, var(--primary-blue) 80%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(102, 217, 255, 0.6);
+        }
+
+        /* 登录表单容器 */
+       .cyber-form {
+            background: rgba(16, 16, 48, 0.95);
+            border: 2px solid var(--primary-blue);
+            border-radius: 8px;
+            padding: 1.5rem; /* 进一步减小表单内边距 */
+            width: min(80%, 360px); /* 可根据需要再调整表单宽度 */
+            backdrop-filter: blur(8px);
+            position: relative;
+            overflow: hidden;
+        }
+
+       .cyber-form::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: var(--cyber-gradient);
+            opacity: 0.1;
+            z-index: -1;
+            animation: gradientRotate 12s linear infinite;
+        }
+
+        @keyframes gradientRotate {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+       .form-title {
+            font: 600 1.6rem 'Orbitron', sans-serif; /* 减小表单标题字体大小 */
+            color: var(--primary-blue);
+            text-align: center;
+            margin-bottom: 1.5rem; /* 减小表单标题与下面元素的间距 */
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+       .form-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: var(--primary-blue);
+            margin: 0.6rem auto; /* 减小伪元素下边距 */
+            box-shadow: var(--neon-shadow);
+        }
+
+       .input-group {
+            margin-bottom: 1.2rem; /* 进一步减小输入组之间的间距 */
+        }
+
+       .input-label {
+            display: block;
+            font: 500 0.85rem 'Roboto Mono', monospace; /* 减小输入标签字体大小 */
+            color: #8C9BFF;
+            margin-bottom: 0.4rem; /* 减小输入标签与输入框的间距 */
+            letter-spacing: 0.5px;
+        }
+
+       .cyber-input {
+            width: 100%;
+            padding: 0.7rem 0.9rem; /* 进一步减小输入框内边距 */
+            background: rgba(32, 32, 64, 0.8);
+            border: 1px solid #4D5BFF;
+            border-radius: 4px;
+            color: #E0E0FF;
+            font-family: 'Roboto Mono', monospace;
+            transition: all 0.3s ease;
+        }
+
+       .cyber-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: var(--neon-shadow);
+            background: rgba(40, 40, 72, 0.9);
+        }
+
+       .login-btn {
+            width: 100%;
+            padding: 0.8rem; /* 进一步减小登录按钮内边距 */
+            background: var(--cyber-gradient);
+            border: none;
+            border-radius: 4px;
+            color: #FFF;
+            font: 500 0.9rem 'Orbitron', sans-serif; /* 减小登录按钮字体大小 */
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+       .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--neon-shadow);
+        }
+          /* 注册按钮样式 */
+       .register-link {
+            display: block;
+            text-align: center;
+            margin-top: 1rem;
+            color: var(--primary-blue);
+            text-decoration: none;
+            font: 500 0.9rem 'Roboto Mono', monospace;
+            transition: color 0.3s ease;
+        }
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+           .platform-title {
+                font-size: 1.4rem;
+            }
+
+           .cyber-form {
+                padding: 1.2rem;
+            }
+
+           .form-title {
+                font-size: 1.2rem;
+            }
+        }
+
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <span class="platform-title">故障信号采集与分析平台</span>
+    </header>
+
+    <main>
+        <form class="cyber-form" id="loginForm" action="/index/" method="post">
+            {% csrf_token %}
+            <h2 class="form-title">SYSTEM LOGIN</h2>
+
+            <div class="input-group">
+                <label class="input-label">USER IDENTIFIER</label>
+                <input type="email" class="cyber-input" name="email" placeholder="user@domain.com" required>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">ACCESS CODE</label>
+                <input type="password" class="cyber-input" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="login-btn">AUTHENTICATE</button>
+        </form>
+        <a href="{% url 'toRegister' %}" class="register-link">没有账号？点击注册</a>
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <p style="color: red; text-align: center;">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </main>
+          <script>
+    const form = document.getElementById('loginForm');
+    form.addEventListener('submit', function (e) {
+        const emailInput = this.querySelector('input[type="email"]');
+        const passwordInput = this.querySelector('input[type="password"]');
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(email)) {
+            alert('请输入有效的电子邮件地址');
+            e.preventDefault();
+            return;
+        }
+        if (password.length < 6) {
+            alert('密码长度不能少于 6 位');
+            e.preventDefault();
+            return;
+        }
+        const submitButton = this.querySelector('.login-btn');
+        submitButton.disabled = true;
+        submitButton.textContent = '验证中...';
+        // 这里不阻止表单提交，让表单正常提交到服务器
+    });
+    </script>
+    <footer>
+        <!-- 页脚内容 -->
+    </footer>
+</body>
+
+</html>
